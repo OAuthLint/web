@@ -150,6 +150,20 @@ const jsonLd = {
         />
       )
     }
+
+    {/* Umami (self-hosted, privacy-first, cookieless) via a FIRST-PARTY proxy: the
+        site's nginx reverse-proxies /stats/* to the internal Umami service, so the
+        tracker is same-origin (satisfies CSP 'self' — no external host needed), the
+        Umami dashboard stays private on the tailnet, and adblockers don't recognise
+        it. Website "oauthlint.dev" lives in Umami; id below. Loads in the built site
+        only (no /stats proxy in local dev, so the script 404s harmlessly there). */}
+    <script
+      defer
+      src="/stats/script.js"
+      data-website-id="737636e5-694e-47ab-92ad-1cb943a94065"
+      data-host-url="https://oauthlint.dev/stats"
+      is:inline
+    />
   </head>
   <body>
     <!-- Release announcement bar: slim, dismissible, above the nav on every
