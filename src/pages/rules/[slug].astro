@@ -309,7 +309,7 @@ const articleJsonLd = {
             <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">Analysis</span><span style={`font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${isTaint ? 'var(--ol-accent)' : 'var(--ol-text-secondary)'};`}>{isTaint ? 'Dataflow' : 'Pattern'}</span></div>
           </div>
         </div>
-        <a href="/rules" style="display:inline-flex; align-items:center; gap:8px; font-family:var(--ol-font-mono); font-weight:500; font-size:12px; color:var(--ol-text-secondary); background:var(--ol-surface); border:1px solid var(--ol-border-strong); height:38px; padding:0 16px; text-decoration:none; justify-content:center; border-radius:3px;">← all rules</a>
+        <a href="/rules" class="ol-backlink" style="display:inline-flex; align-items:center; gap:8px; font-family:var(--ol-font-mono); font-weight:500; font-size:12px; color:var(--ol-text-secondary); background:var(--ol-surface); border:1px solid var(--ol-border-strong); height:38px; padding:0 16px; text-decoration:none; justify-content:center; border-radius:3px;">← all rules</a>
       </aside>
     </div>
   </SiteChrome>
@@ -353,6 +353,19 @@ const articleJsonLd = {
   .ol-ref-link:hover {
     color: var(--ol-accent);
     border-color: var(--ol-accent);
+  }
+
+  /* "← all rules" back link: same bordered-button hover language as the rest
+     of the site (border lifts to the accent border, text brightens). */
+  .ol-backlink {
+    transition: border-color var(--ol-dur-fast) var(--ol-ease-standard), color var(--ol-dur-fast)
+      var(--ol-ease-standard);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .ol-backlink:hover {
+      border-color: var(--ol-accent-border) !important;
+      color: var(--ol-text) !important;
+    }
   }
 
   /* METADATA rail rows: keep a firm gap between label and value so long mono

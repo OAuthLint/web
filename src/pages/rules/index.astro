@@ -223,8 +223,8 @@ const PAGE_SIZE = 8;
                       <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
                         <a href={`/rules/${r.slug}`} class="rule-row-link" style="font-family:var(--ol-font-mono); font-size:13px; font-weight:600; color:var(--ol-accent);">{r.slug}</a>
                         {isTaint(r.id) && (
-                          <span title="Dataflow rule — traces untrusted/sensitive data from source to a dangerous sink" style="display:inline-flex; align-items:center; gap:4px; font-family:var(--ol-font-mono); font-size:9px; font-weight:600; letter-spacing:0.06em; color:var(--ol-accent); border:1px solid var(--ol-accent-800); border-radius:2px; padding:1px 5px; line-height:1.4;">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h11"></path><path d="M4 7l3-3M4 7l3 3"></path><path d="M20 17H9"></path><path d="M20 17l-3-3M20 17l-3 3"></path></svg>
+                          <span title="Dataflow rule — traces untrusted/sensitive data from source to a dangerous sink" style="display:inline-flex; align-items:center; gap:4px; font-family:var(--ol-font-mono); font-size:var(--ol-text-label); font-weight:600; letter-spacing:0.06em; color:var(--ol-accent); border:1px solid var(--ol-accent-800); border-radius:2px; padding:1px 6px; line-height:1.4;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h11"></path><path d="M4 7l3-3M4 7l3 3"></path><path d="M20 17H9"></path><path d="M20 17l-3-3M20 17l-3 3"></path></svg>
                             DATAFLOW
                           </span>
                         )}
@@ -392,6 +392,12 @@ const PAGE_SIZE = 8;
       background: var(--ol-accent-subtle);
       border-color: var(--ol-accent-border);
     }
+    @media (hover: hover) and (pointer: fine) {
+      .rule-chip:not(.is-active):hover {
+        color: var(--ol-text);
+        border-color: var(--ol-accent-border);
+      }
+    }
     /* Dataflow (taint) mode toggle — a distinct mono chip, not a severity. */
     .rule-flowbtn {
       display: inline-flex;
@@ -436,11 +442,19 @@ const PAGE_SIZE = 8;
       font-weight: 600;
       color: var(--ol-text-secondary);
       cursor: pointer;
+      transition: border-color var(--ol-dur-fast) var(--ol-ease-standard), color var(--ol-dur-fast)
+        var(--ol-ease-standard);
     }
     .rule-pagebtn:disabled {
       color: var(--ol-text-faint);
       cursor: not-allowed;
       opacity: 0.6;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .rule-pagebtn:not(:disabled):hover {
+        color: var(--ol-text);
+        border-color: var(--ol-accent-border);
+      }
     }
     .rule-row {
       position: relative;

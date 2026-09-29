@@ -263,6 +263,96 @@ const editHref = `https://github.com/OAuthLint/docs/edit/main/src/pages/docs/${s
   }
 </script>
 
+<script>
+  // Docs sidebar disclosure: animate each section's open/close instead of the
+  // browser's instant <details> toggle. Height is the one property this needs
+  // to animate (there is no transform equivalent for a native disclosure), so
+  // this is WAAPI driving `height` directly on the <details> element, matching
+  // --ol-dur-base / --ol-ease-standard already used for the chevron rotation
+  // right next to it. Entirely skipped under reduced motion, which leaves the
+  // browser's native, instant open/close in place.
+  if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const DURATION = 180; // --ol-dur-base
+    const EASING = 'cubic-bezier(0.2, 0, 0, 1)'; // --ol-ease-standard
+
+    class Disclosure {
+      el: HTMLDetailsElement;
+      summary: HTMLElement;
+      content: HTMLElement;
+      animation: Animation | null = null;
+      isClosing = false;
+      isExpanding = false;
+
+      constructor(el: HTMLDetailsElement, summary: HTMLElement, content: HTMLElement) {
+        this.el = el;
+        this.summary = summary;
+        this.content = content;
+        this.summary.addEventListener('click', (e) => this.onClick(e));
+      }
+
+      onClick(e: MouseEvent) {
+        // Only left-click / no-modifier activation drives the animated path;
+        // anything else (middle-click, etc.) keeps native behaviour.
+        if (e.button !== 0) return;
+        e.preventDefault();
+        this.el.style.overflow = 'hidden';
+        if (this.isClosing || !this.el.open) this.open();
+        else if (this.isExpanding || this.el.open) this.shrink();
+      }
+
+      shrink() {
+        this.isClosing = true;
+        const startHeight = `${this.el.offsetHeight}px`;
+        const endHeight = `${this.summary.offsetHeight}px`;
+        this.animation?.cancel();
+        this.animation = this.el.animate(
+          { height: [startHeight, endHeight] },
+          { duration: DURATION, easing: EASING },
+        );
+        this.animation.onfinish = () => this.onFinish(false);
+        this.animation.oncancel = () => {
+          this.isClosing = false;
+        };
+      }
+
+      open() {
+        this.el.style.height = `${this.el.offsetHeight}px`;
+        this.el.open = true;
+        requestAnimationFrame(() => this.expand());
+      }
+
+      expand() {
+        this.isExpanding = true;
+        const startHeight = `${this.el.offsetHeight}px`;
+        const endHeight = `${this.summary.offsetHeight + this.content.offsetHeight}px`;
+        this.animation?.cancel();
+        this.animation = this.el.animate(
+          { height: [startHeight, endHeight] },
+          { duration: DURATION, easing: EASING },
+        );
+        this.animation.onfinish = () => this.onFinish(true);
+        this.animation.oncancel = () => {
+          this.isExpanding = false;
+        };
+      }
+
+      onFinish(open: boolean) {
+        this.el.open = open;
+        this.animation = null;
+        this.isClosing = false;
+        this.isExpanding = false;
+        this.el.style.height = this.el.style.overflow = '';
+      }
+    }
+
+    for (const el of document.querySelectorAll<HTMLDetailsElement>('.docs-group')) {
+      const summary = el.querySelector<HTMLElement>('summary');
+      const content = el.querySelector<HTMLElement>('.docs-group-nav');
+      if (summary && content) new Disclosure(el, summary, content);
+    }
+  }
+</script>
+
 <style is:global>
   .docs-shell {
     min-height: 100vh;
@@ -472,6 +562,15 @@ const editHref = `https://github.com/OAuthLint/docs/edit/main/src/pages/docs/${s
   .docs-main {
     min-width: 0;
     max-width: 760px;
+  }
+  /* One gentle entrance for the article content on load — reuses the same
+     fade-up keyframe as the marketing scroll-reveal (global.css), just
+     shorter and without a scroll trigger. The sidebar tree and TOC rail stay
+     put so only the thing the visitor came to read moves. */
+  @media (prefers-reduced-motion: no-preference) {
+    .docs-main {
+      animation: ol-fade-up var(--ol-dur-slow) var(--ol-ease-out) both;
+    }
   }
   .docs-breadcrumb {
     margin-bottom: var(--ol-space-4);

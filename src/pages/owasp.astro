@@ -98,7 +98,7 @@ const editionCount = editionList.length;
     <main style="max-width:1120px; margin:0 auto; padding:var(--ol-space-12) var(--ol-space-6) var(--ol-space-20);">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:var(--ol-space-3);">
         <span style="width:6px; height:6px; background:var(--ol-accent);"></span>
-        <span style="font-family:var(--ol-font-mono); font-size:11px; font-weight:500; letter-spacing:0.14em; color:var(--ol-text-muted);">OWASP COVERAGE</span>
+        <span style="font-family:var(--ol-font-mono); font-size:var(--ol-text-label); font-weight:500; letter-spacing:0.14em; color:var(--ol-text-muted);">OWASP COVERAGE</span>
       </div>
       <h1 style="font-family:var(--ol-font-display); font-weight:700; font-size:var(--ol-text-display-l); letter-spacing:-0.03em; margin:0 0 var(--ol-space-4);">Mapped to the risks that matter.</h1>
       <p style="font-size:var(--ol-text-body-l); line-height:var(--ol-leading-relaxed); color:var(--ol-text-secondary); max-width:62ch; margin:0 0 var(--ol-space-8);">
@@ -109,15 +109,15 @@ const editionCount = editionList.length;
       <div style="display:grid; grid-template-columns:repeat(3, 1fr); border:1px solid var(--ol-border); margin-bottom:var(--ol-space-10);">
         <div style="padding:var(--ol-space-5) var(--ol-space-6); border-right:1px solid var(--ol-border);">
           <div style="font-family:var(--ol-font-display); font-weight:700; font-size:clamp(26px,3vw,32px); letter-spacing:-0.03em; line-height:1; color:var(--ol-text);">{categoryCount}</div>
-          <div style="font-family:var(--ol-font-mono); font-size:11px; letter-spacing:0.04em; color:var(--ol-text-muted); margin-top:8px; text-transform:uppercase;">OWASP categories covered</div>
+          <div style="font-family:var(--ol-font-mono); font-size:var(--ol-text-label); letter-spacing:0.04em; color:var(--ol-text-muted); margin-top:8px; text-transform:uppercase;">OWASP categories covered</div>
         </div>
         <div style="padding:var(--ol-space-5) var(--ol-space-6); border-right:1px solid var(--ol-border);">
           <div style="font-family:var(--ol-font-display); font-weight:700; font-size:clamp(26px,3vw,32px); letter-spacing:-0.03em; line-height:1; color:var(--ol-text);">{mappedRuleCount}</div>
-          <div style="font-family:var(--ol-font-mono); font-size:11px; letter-spacing:0.04em; color:var(--ol-text-muted); margin-top:8px; text-transform:uppercase;">rules mapped to a risk</div>
+          <div style="font-family:var(--ol-font-mono); font-size:var(--ol-text-label); letter-spacing:0.04em; color:var(--ol-text-muted); margin-top:8px; text-transform:uppercase;">rules mapped to a risk</div>
         </div>
         <div style="padding:var(--ol-space-5) var(--ol-space-6);">
           <div style="font-family:var(--ol-font-display); font-weight:700; font-size:clamp(26px,3vw,32px); letter-spacing:-0.03em; line-height:1; color:var(--ol-text);">{editionCount}</div>
-          <div style="font-family:var(--ol-font-mono); font-size:11px; letter-spacing:0.04em; color:var(--ol-text-muted); margin-top:8px; text-transform:uppercase;">OWASP editions</div>
+          <div style="font-family:var(--ol-font-mono); font-size:var(--ol-text-label); letter-spacing:0.04em; color:var(--ol-text-muted); margin-top:8px; text-transform:uppercase;">OWASP editions</div>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ const editionCount = editionList.length;
         <section style="margin-bottom:var(--ol-space-12);">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:var(--ol-space-5);">
             <span style="width:6px; height:6px; background:var(--ol-text-muted);"></span>
-            <span style="font-family:var(--ol-font-mono); font-size:11px; font-weight:600; letter-spacing:0.1em; color:var(--ol-text-muted);">{edition.label.toUpperCase()}</span>
+            <span style="font-family:var(--ol-font-mono); font-size:var(--ol-text-label); font-weight:600; letter-spacing:0.1em; color:var(--ol-text-muted);">{edition.label.toUpperCase()}</span>
           </div>
 
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:var(--ol-space-4);">
@@ -136,7 +136,7 @@ const editionCount = editionList.length;
                     ? <a href={group.href} target="_blank" rel="noopener noreferrer" class="ol-ref-link" style="font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:var(--ol-accent); text-decoration:none;">{group.code} ↗</a>
                     : <span style="font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:var(--ol-text-secondary);">{group.code}</span>}
                   <span style="font-family:var(--ol-font-ui); font-size:var(--ol-text-body-s); color:var(--ol-text);">{group.title}</span>
-                  <span style="margin-left:auto; font-family:var(--ol-font-mono); font-size:11px; color:var(--ol-text-faint); white-space:nowrap;">{group.rules.length} {group.rules.length === 1 ? 'rule' : 'rules'}</span>
+                  <span style="margin-left:auto; font-family:var(--ol-font-mono); font-size:var(--ol-text-label); color:var(--ol-text-faint); white-space:nowrap;">{group.rules.length} {group.rules.length === 1 ? 'rule' : 'rules'}</span>
                 </header>
                 <ul style="list-style:none; margin:0; padding:0;">
                   {group.rules.map((r) => (
@@ -147,8 +147,8 @@ const editionCount = editionList.length;
                       >
                         <span aria-hidden="true" style={`flex:none; width:7px; height:7px; background:${SEV[r.severity]};`}></span>
                         <span style="flex:1; min-width:0;">
-                          <span style="display:block; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-accent); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{r.id}</span>
-                          <span style="display:block; font-size:12px; color:var(--ol-text-secondary); line-height:1.4;">{r.title}</span>
+                          <span style="display:block; font-family:var(--ol-font-mono); font-size:var(--ol-text-label); color:var(--ol-accent); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{r.id}</span>
+                          <span style="display:block; font-size:13px; color:var(--ol-text-secondary); line-height:1.4;">{r.title}</span>
                         </span>
                       </a>
                     </li>
@@ -161,8 +161,8 @@ const editionCount = editionList.length;
       ))}
 
       <div style="display:flex; flex-wrap:wrap; gap:var(--ol-space-3); align-items:center; margin-top:var(--ol-space-4);">
-        <a href="/rules" style="display:inline-flex; align-items:center; gap:8px; font-family:var(--ol-font-mono); font-weight:500; font-size:12px; color:var(--ol-text-secondary); background:var(--ol-surface); border:1px solid var(--ol-border-strong); height:38px; padding:0 16px; text-decoration:none; justify-content:center;">← all rules</a>
-        <span style="font-family:var(--ol-font-mono); font-size:11px; color:var(--ol-text-faint);">Coverage is derived from the shipped rule pack, so it grows with the rules.</span>
+        <a href="/rules" class="ol-backlink" style="display:inline-flex; align-items:center; gap:8px; font-family:var(--ol-font-mono); font-weight:500; font-size:12px; color:var(--ol-text-secondary); background:var(--ol-surface); border:1px solid var(--ol-border-strong); height:38px; padding:0 16px; text-decoration:none; justify-content:center;">← all rules</a>
+        <span style="font-family:var(--ol-font-mono); font-size:var(--ol-text-label); color:var(--ol-text-faint);">Coverage is derived from the shipped rule pack, so it grows with the rules.</span>
       </div>
     </main>
   </SiteChrome>
@@ -172,6 +172,18 @@ const editionCount = editionList.length;
     /* OWASP reference link: accent on hover, matches the rule-detail rail. */
     .ol-ref-link:hover {
       color: var(--ol-accent-hover);
+    }
+    /* "← all rules" back link: same bordered-button hover language as the
+       rest of the site (border lifts to the accent border, text brightens). */
+    .ol-backlink {
+      transition: border-color var(--ol-dur-fast) var(--ol-ease-standard), color var(--ol-dur-fast)
+        var(--ol-ease-standard);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .ol-backlink:hover {
+        border-color: var(--ol-accent-border) !important;
+        color: var(--ol-text) !important;
+      }
     }
     /* Rule rows lift on hover/focus without introducing a new visual style. */
     article ul li a:hover,
