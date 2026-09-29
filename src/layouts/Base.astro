@@ -2,6 +2,7 @@
 import '../styles/tokens.css';
 import '../styles/global.css';
 import AnnouncementBar from '../components/AnnouncementBar.astro';
+import { PLATFORM_LIVE } from '../config';
 
 interface Props {
   title: string;
@@ -164,8 +165,22 @@ const jsonLd = {
       data-host-url="https://oauthlint.dev/stats"
       is:inline
     />
+
+    {
+      /* Platform (OAuthLint Cloud) not shipped yet — hide every CTA to the
+         unshipped app (Sign in / Start free at app.oauthlint.dev) and the
+         Pricing links, across the baked-in HTML partials and the Astro chrome
+         alike. Gated by a body class so flipping PLATFORM_LIVE in src/config.ts
+         restores everything. Nothing is deleted, only hidden. */
+    }
+    <style is:global>
+      body.platform-prelaunch a[href^="https://app.oauthlint.dev"],
+      body.platform-prelaunch a[href="/pricing"] {
+        display: none !important;
+      }
+    </style>
   </head>
-  <body>
+  <body class:list={[{ 'platform-prelaunch': !PLATFORM_LIVE }]}>
     <!-- Release announcement bar: slim, dismissible, above the nav on every
          page. Config-driven from src/data/announcement.ts (renders nothing when
          that exports null). Mounted here so it wraps both the captured marketing

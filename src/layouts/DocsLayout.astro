@@ -1,5 +1,6 @@
 ---
 import Search from 'astro-pagefind/components/Search.astro';
+import { PLATFORM_LIVE } from '../config';
 import { DOCS_NAV } from '../data/docs-nav';
 import Base from './Base.astro';
 
@@ -27,6 +28,13 @@ const headings = Astro.props.headings ?? [];
 const toc = headings.filter((h) => h.depth === 2);
 
 const WWW = '';
+
+// Hide the "OAuthLint Cloud" docs group until the platform ships (PLATFORM_LIVE).
+// DOCS_NAV stays the full source of truth (the content test relies on it); only
+// the rendered sidebar is filtered. Flip PLATFORM_LIVE in src/config.ts to restore.
+const DOCS_NAV_VISIBLE = PLATFORM_LIVE
+  ? DOCS_NAV
+  : DOCS_NAV.filter((g) => g.group !== 'OAuthLint Cloud');
 
 const activeGroup = DOCS_NAV.find((g) => g.items.some((i) => i.key === section));
 const activeItem = activeGroup?.items.find((i) => i.key === section);
@@ -95,7 +103,7 @@ const editHref = `https://github.com/OAuthLint/docs/edit/main/src/pages/docs/${s
           <Search className="pagefind-ui" />
         </div>
         {
-          DOCS_NAV.map((grp, gi) => (
+          DOCS_NAV_VISIBLE.map((grp, gi) => (
             <details class="docs-group" open={grp === activeGroup || (!activeGroup && gi === 0)}>
               <summary class="docs-group-label">
                 <span>{grp.group}</span>
