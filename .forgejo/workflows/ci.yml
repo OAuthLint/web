@@ -1,0 +1,32 @@
+# oauthlint.dev (www) — CI on Forgejo Actions (self-hosted runner).
+# Quality -> tests -> build. Forgejo is primary; GitHub is a push-mirror, so
+# GitHub Actions stay disabled here (no .github/workflows).
+name: ci
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: docker
+    steps:
+      - uses: actions/checkout@v4
+        with: { token: "${{ secrets.FORGEJO_TOKEN }}", fetch-depth: 0 }
+      - name: Setup pnpm + install
+        run: |
+          set -euo pipefail
+          corepack enable
+          pnpm install --frozen-lockfile
+      - name: Lint + format check (Biome)
+        run: pnpm biome ci .
+      - name: Secret scan (gitleaks)
+        run: |
+          docker run --rm --volumes-from "$(hostname)" -w "$GITHUB_WORKSPACE" \
+            zricethezav/gitleaks:v8.21.2 dir --redact --exit-code 1 .
+      - name: Typecheck (astro check)
+        run: pnpm typecheck
+      - name: Unit tests (Vitest)
+        run: pnpm test:run
+      - name: Build (Astro static)
+        run: pnpm build

@@ -1,0 +1,887 @@
+---
+import Search from 'astro-pagefind/components/Search.astro';
+import { DOCS_NAV } from '../data/docs-nav';
+import Base from './Base.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  frontmatter?: { title?: string; description?: string; section?: string };
+  title?: string;
+  description?: string;
+  section?: string;
+  /** Injected by Astro for markdown pages that set `layout` in frontmatter. */
+  headings?: Heading[];
+}
+
+const fm = Astro.props.frontmatter ?? {};
+const section = Astro.props.section ?? fm.section ?? '';
+const pageTitle = Astro.props.title ?? fm.title ?? 'Docs';
+const title = `${pageTitle} · Docs — OAuthLint`;
+const description = Astro.props.description ?? fm.description;
+const headings = Astro.props.headings ?? [];
+const toc = headings.filter((h) => h.depth === 2);
+
+const WWW = '';
+
+const activeGroup = DOCS_NAV.find((g) => g.items.some((i) => i.key === section));
+const activeItem = activeGroup?.items.find((i) => i.key === section);
+const groupLabel = activeGroup?.group ?? '';
+
+// The page's markdown source, for the "Edit this page on GitHub" footer link.
+// Mirrors the route: /docs -> index.md, /docs/cloud/get-started -> cloud/get-started.md.
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/docs';
+const slug = pathname === '/docs' ? 'index' : pathname.replace(/^\/docs\//, '');
+const editHref = `https://github.com/OAuthLint/docs/edit/main/src/pages/docs/${slug}.md`;
+---
+
+<Base title={title} description={description}>
+  <div class="docs-shell">
+    <nav class="docs-topnav" aria-label="Primary">
+      <a href="/" class="docs-brand" aria-label="OAuthLint home">
+        <svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect x="13" y="11" width="38" height="27" stroke="var(--ol-accent)" stroke-width="5"></rect>
+          <path
+            d="M11 50c3-5 6-5 9 0s6 5 9 0 6-5 9 0 6 5 9 0"
+            stroke="var(--ol-sev-critical)"
+            stroke-width="5"
+            stroke-linecap="round"></path>
+        </svg>
+        <span class="docs-brand-name">OAuthLint</span>
+      </a>
+      <div class="docs-topnav-spacer"></div>
+      <div class="docs-navlinks" data-navlinks>
+        <a href="/docs" aria-current="page">Docs</a>
+        <a href={`${WWW}/rules`}>Rules</a>
+        <a href={`${WWW}/pricing`}>Pricing</a>
+        <a href={`${WWW}/security`}>Security</a>
+      </div>
+      <div class="docs-topnav-actions">
+        <button type="button" data-theme-toggle aria-label="Toggle light or dark theme" title="Toggle theme" class="docs-theme-btn">
+          <svg class="icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"></path>
+          </svg>
+          <svg class="icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.4 1.4M17.6 17.6L19 19M19 5l-1.4 1.4M6.4 17.6L5 19"></path>
+          </svg>
+        </button>
+        <a
+          href="https://github.com/OAuthLint/oauthlint"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="OAuthLint on GitHub"
+          title="GitHub"
+          class="docs-icon-btn"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.85 9.73.5.1.68-.22.68-.49v-1.7c-2.79.62-3.38-1.22-3.38-1.22-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.94.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05A9.4 9.4 0 0112 6.84c.85 0 1.71.12 2.51.34 1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.26 10.26 0 0022 12.25C22 6.58 17.52 2 12 2z"
+            ></path>
+          </svg>
+        </a>
+        <a href="https://app.oauthlint.dev/login" class="docs-signin">Sign in</a>
+        <a href="https://app.oauthlint.dev/signup" class="docs-startfree">Start free</a>
+      </div>
+    </nav>
+
+    <div class="docs-grid" data-docgrid>
+      <aside class="docs-leftnav" data-leftnav aria-label="Documentation">
+        <div class="docs-search">
+          <Search id="docs-search" className="pagefind-ui" uiOptions={{ showImages: false, showSubResults: true, resetStyles: false }} />
+        </div>
+        {
+          DOCS_NAV.map((grp, gi) => (
+            <details class="docs-group" open={grp === activeGroup || (!activeGroup && gi === 0)}>
+              <summary class="docs-group-label">
+                <span>{grp.group}</span>
+                <svg
+                  class="docs-chevron"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </summary>
+              <nav aria-label={grp.group} class="docs-group-nav">
+                {grp.items.map((item) => (
+                  <a
+                    href={item.href}
+                    aria-current={section === item.key ? 'page' : undefined}
+                    class:list={['docs-tree-link', { active: section === item.key }]}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+            </details>
+          ))
+        }
+      </aside>
+
+      <main id="main" class="docs-main">
+        <nav aria-label="Breadcrumb" class="docs-breadcrumb">
+          <ol>
+            <li><a href="/docs">Docs</a></li>
+            <li aria-hidden="true">/</li>
+            <li>{groupLabel}</li>
+            <li aria-hidden="true">/</li>
+            <li><span aria-current="page">{activeItem?.label ?? pageTitle}</span></li>
+          </ol>
+        </nav>
+        <article class="prose">
+          <slot />
+        </article>
+        <div class="docs-edit-row">
+          <a href={editHref} target="_blank" rel="noopener noreferrer">Edit this page on GitHub</a>
+        </div>
+      </main>
+
+      <aside class="docs-toc" data-toc aria-label="On this page">
+        {
+          toc.length > 0 && (
+            <>
+              <h2 class="docs-group-label">On this page</h2>
+              <nav aria-label="On this page" class="docs-toc-nav">
+                {toc.map((h) => (
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                ))}
+              </nav>
+            </>
+          )
+        }
+      </aside>
+    </div>
+
+    <footer class="docs-footer">
+      <div class="docs-footer-grid">
+        <div class="docs-footer-brand">
+          <a href="/" aria-label="OAuthLint home" class="docs-brand">
+            <svg width="22" height="22" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <rect x="13" y="11" width="38" height="27" stroke="var(--ol-accent)" stroke-width="5"></rect>
+              <path
+                d="M11 50c3-5 6-5 9 0s6 5 9 0 6-5 9 0 6 5 9 0"
+                stroke="var(--ol-sev-critical)"
+                stroke-width="5"
+                stroke-linecap="round"></path>
+            </svg>
+            <span class="docs-brand-name">OAuthLint</span>
+          </a>
+          <p class="docs-footer-tagline">Secure the code your AI writes. Open source, end to end.</p>
+        </div>
+        <div>
+          <h2>Product</h2>
+          <ul>
+            <li><a href="/docs">Docs</a></li>
+            <li><a href={`${WWW}/rules`}>Rules</a></li>
+            <li><a href={`${WWW}/pricing`}>Pricing</a></li>
+            <li><a href={`${WWW}/changelog`}>Changelog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Trust</h2>
+          <ul>
+            <li><a href={`${WWW}/security`}>Security</a></li>
+            <li><a href={`${WWW}/research`}>Research</a></li>
+            <li><a href={`${WWW}/status`}>Status</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Project</h2>
+          <ul>
+            <li><a href={`${WWW}/about`}>About</a></li>
+            <li>
+              <a href="https://github.com/OAuthLint/oauthlint" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2>Legal</h2>
+          <ul>
+            <li><a href={`${WWW}/terms`}>Terms</a></li>
+            <li><a href={`${WWW}/privacy`}>Privacy</a></li>
+            <li><a href={`${WWW}/dpa`}>DPA</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </div>
+</Base>
+
+<script>
+  // TOC scroll-spy: highlight the "On this page" link for the section currently
+  // in view. Observes each h2 the TOC points at; the highest heading whose top
+  // has passed the reading line wins. Degrades to no highlight without JS/IO.
+  {
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('.docs-toc-nav a')];
+    if (links.length && 'IntersectionObserver' in window) {
+      const byId = new Map(links.map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+      const headings = [...byId.keys()]
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => !!el);
+      const visible = new Set<string>();
+      const setActive = () => {
+        // Prefer the topmost heading currently intersecting; otherwise the last
+        // heading scrolled past (so the final section stays lit at page bottom).
+        let current: string | null = null;
+        if (visible.size) {
+          current = headings
+            .filter((h) => visible.has(h.id))
+            .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0]?.id ?? null;
+        } else {
+          for (const h of headings) {
+            if (h.getBoundingClientRect().top < 120) current = h.id;
+          }
+        }
+        for (const [id, a] of byId) a.classList.toggle('active', id === current);
+      };
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) visible.add(e.target.id);
+            else visible.delete(e.target.id);
+          }
+          setActive();
+        },
+        // A band near the top acts as the "reading line".
+        { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+      );
+      for (const h of headings) io.observe(h);
+      setActive();
+    }
+  }
+</script>
+
+<style is:global>
+  .docs-shell {
+    min-height: 100vh;
+    background-color: var(--ol-page);
+    background-image:
+      linear-gradient(to right, var(--ol-grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--ol-grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* Top nav ---------------------------------------------------------- */
+  .docs-topnav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: var(--ol-space-6);
+    padding: 0 var(--ol-space-6);
+    height: 56px;
+    background: color-mix(in oklch, var(--ol-page) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--ol-border);
+  }
+  .docs-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--ol-text);
+  }
+  .docs-brand-name {
+    font-family: var(--ol-font-display);
+    font-weight: var(--ol-weight-bold);
+    font-size: 16px;
+    letter-spacing: var(--ol-tracking-tight);
+  }
+  .docs-topnav-spacer {
+    flex: 1;
+  }
+  .docs-navlinks {
+    display: flex;
+    align-items: center;
+    gap: var(--ol-space-6);
+  }
+  .docs-navlinks a {
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    font-weight: var(--ol-weight-medium);
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+    transition: color var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .docs-navlinks a[aria-current='page'] {
+    color: var(--ol-text);
+  }
+  .docs-navlinks a:hover {
+    color: var(--ol-text);
+  }
+  .docs-topnav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: var(--ol-space-6);
+  }
+  .docs-theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--ol-surface);
+    border: 1px solid var(--ol-border-strong);
+    color: var(--ol-text-secondary);
+    cursor: pointer;
+    transition: border-color var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .docs-theme-btn:hover {
+    border-color: var(--ol-accent-border);
+    color: var(--ol-text);
+  }
+  .docs-theme-btn .icon-light {
+    display: none;
+  }
+  :root[data-theme='light'] .docs-theme-btn .icon-dark {
+    display: none;
+  }
+  :root[data-theme='light'] .docs-theme-btn .icon-light {
+    display: inline;
+  }
+  .docs-icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--ol-radius-xs);
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+    transition:
+      color var(--ol-dur-fast) var(--ol-ease-standard),
+      background-color var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .docs-icon-btn:hover {
+    color: var(--ol-text);
+    background: var(--ol-overlay);
+  }
+  .docs-signin {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 12px;
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    font-weight: var(--ol-weight-medium);
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+  }
+  .docs-signin:hover {
+    color: var(--ol-text);
+  }
+  .docs-startfree {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--ol-radius-xs);
+    background: var(--ol-accent);
+    color: var(--ol-accent-fg);
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    font-weight: var(--ol-weight-semibold);
+    text-decoration: none;
+  }
+
+  /* 3-column doc grid -------------------------------------------------- */
+  .docs-grid {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 200px;
+    gap: var(--ol-space-10);
+    padding: var(--ol-space-8) var(--ol-space-6);
+  }
+
+  /* Left sidebar tree ---------------------------------------------------- */
+  .docs-leftnav {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+  }
+  .docs-group {
+    margin-bottom: var(--ol-space-2);
+  }
+  /* Collapsible section headers (native <details>/<summary>). */
+  .docs-group-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0;
+    padding: 5px 6px 5px 0;
+    font-family: var(--ol-font-ui);
+    font-size: 13px;
+    font-weight: var(--ol-weight-semibold);
+    color: var(--ol-text);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    border-radius: var(--ol-radius-xs);
+  }
+  .docs-group-label::-webkit-details-marker { display: none; }
+  .docs-group-label:hover { color: var(--ol-accent); }
+  .docs-chevron {
+    flex: 0 0 auto;
+    color: var(--ol-text-faint);
+    transition: transform var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .docs-group[open] > .docs-group-label .docs-chevron { transform: rotate(180deg); }
+  .docs-group-label:hover .docs-chevron { color: var(--ol-accent); }
+  .docs-group-nav {
+    display: flex;
+    flex-direction: column;
+    margin: 4px 0 var(--ol-space-3);
+    border-left: 1px solid var(--ol-border);
+  }
+  .docs-tree-link {
+    padding: 6px 12px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+    transition: color var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .docs-tree-link:hover {
+    color: var(--ol-text);
+  }
+  .docs-tree-link.active {
+    border-left-color: var(--ol-accent);
+    background: var(--ol-accent-subtle);
+    font-weight: var(--ol-weight-medium);
+    color: var(--ol-accent);
+  }
+
+  /* Main column: breadcrumb + article ------------------------------------ */
+  .docs-main {
+    min-width: 0;
+    max-width: 760px;
+  }
+  .docs-breadcrumb {
+    margin-bottom: var(--ol-space-4);
+  }
+  .docs-breadcrumb ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 8px;
+    font-family: var(--ol-font-ui);
+    font-size: 13px;
+    color: var(--ol-text-muted);
+  }
+  .docs-breadcrumb a {
+    color: var(--ol-accent);
+    text-decoration: none;
+  }
+  .docs-breadcrumb a:hover {
+    text-decoration: underline;
+  }
+  .docs-breadcrumb span[aria-current] {
+    color: var(--ol-text);
+  }
+  .docs-edit-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: var(--ol-space-12);
+    padding-top: var(--ol-space-5);
+    border-top: 1px solid var(--ol-border);
+  }
+  .docs-edit-row a {
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+  }
+  .docs-edit-row a:hover {
+    color: var(--ol-text);
+  }
+
+  /* TOC rail ------------------------------------------------------------ */
+  .docs-toc {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+  }
+  .docs-toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-left: 1px solid var(--ol-border);
+  }
+  .docs-toc-nav a {
+    padding: 4px 0 4px 12px;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+    transition:
+      color var(--ol-dur-fast) var(--ol-ease-standard),
+      border-color var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .docs-toc-nav a:hover {
+    color: var(--ol-text);
+  }
+  /* Scroll-spy: the section currently in view is highlighted. */
+  .docs-toc-nav a.active {
+    color: var(--ol-accent);
+    border-left-color: var(--ol-accent);
+    font-weight: var(--ol-weight-medium);
+  }
+
+  /* Footer ---------------------------------------------------------------- */
+  .docs-footer {
+    border-top: 1px solid var(--ol-border);
+    margin-top: var(--ol-space-16);
+  }
+  .docs-footer-grid {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: var(--ol-space-12) var(--ol-space-6);
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
+    gap: 32px;
+  }
+  .docs-footer-tagline {
+    margin: 12px 0 0;
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ol-text-muted);
+    max-width: 34ch;
+  }
+  .docs-footer-grid h2 {
+    margin: 0 0 12px;
+    font-family: var(--ol-font-ui);
+    font-size: 13px;
+    font-weight: var(--ol-weight-semibold);
+    color: var(--ol-text);
+  }
+  .docs-footer-grid ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .docs-footer-grid a {
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+  }
+  .docs-footer-grid a:hover {
+    color: var(--ol-text);
+  }
+
+  /* Responsive -------------------------------------------------------------
+     ≥1000px: full 3-column grid.
+     720–999px: drop the TOC rail, keep the sidebar tree.
+     <720px: single column; drop the sidebar tree and the top nav links, but
+     keep the TOC (it reflows below the article — verified against the design's
+     390px reference render). */
+  @media (max-width: 1000px) {
+    .docs-grid {
+      grid-template-columns: 200px minmax(0, 1fr);
+    }
+    .docs-toc {
+      display: none;
+    }
+  }
+  @media (max-width: 720px) {
+    .docs-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--ol-space-6);
+    }
+    .docs-leftnav,
+    .docs-navlinks {
+      display: none;
+    }
+    .docs-toc {
+      display: block;
+      position: static;
+      margin-top: var(--ol-space-8);
+    }
+  }
+  @media print {
+    .docs-topnav {
+      position: static;
+    }
+    .docs-leftnav,
+    .docs-toc {
+      display: none;
+    }
+  }
+
+  /* Prose, shared by every docs page's rendered markdown. */
+  .prose {
+    min-width: 0;
+    color: var(--ol-text-secondary);
+    font-family: var(--ol-font-ui);
+    font-size: var(--ol-text-body-m);
+    line-height: var(--ol-leading-relaxed);
+  }
+  .prose h1 {
+    font-family: var(--ol-font-display);
+    font-weight: var(--ol-weight-bold);
+    font-size: var(--ol-text-display-m);
+    letter-spacing: var(--ol-tracking-tight);
+    line-height: 1.15;
+    color: var(--ol-text);
+    margin: 0 0 var(--ol-space-3);
+  }
+  .prose .lede,
+  .prose h1 + p {
+    font-size: var(--ol-text-body-l);
+    line-height: 1.6;
+    color: var(--ol-text-secondary);
+    margin: 0 0 var(--ol-space-6);
+  }
+  .prose h2 {
+    font-family: var(--ol-font-ui);
+    font-size: var(--ol-text-heading-l);
+    font-weight: var(--ol-weight-semibold);
+    letter-spacing: var(--ol-tracking-snug);
+    color: var(--ol-text);
+    margin: var(--ol-space-10) 0 var(--ol-space-3);
+    scroll-margin-top: 80px;
+  }
+  .prose h2:first-child {
+    margin-top: 0;
+  }
+  .prose h3 {
+    font-family: var(--ol-font-ui);
+    font-size: var(--ol-text-heading-m);
+    font-weight: var(--ol-weight-semibold);
+    color: var(--ol-text);
+    margin: var(--ol-space-8) 0 var(--ol-space-3);
+    scroll-margin-top: 80px;
+  }
+  .prose p,
+  .prose > ul,
+  .prose > ol {
+    font-size: var(--ol-text-body-m);
+    line-height: 1.75;
+    color: var(--ol-text-secondary);
+    margin: 0 0 var(--ol-space-4);
+  }
+  .prose a {
+    color: var(--ol-accent);
+    text-decoration: none;
+  }
+  .prose a:hover {
+    text-decoration: underline;
+  }
+  .prose strong {
+    color: var(--ol-text);
+    font-weight: var(--ol-weight-semibold);
+  }
+  .prose code {
+    font-family: var(--ol-font-mono);
+    font-size: 0.875em;
+    background: var(--ol-surface-raised);
+    border: 1px solid var(--ol-border-subtle);
+    border-radius: var(--ol-radius-xs);
+    padding: 1px 5px;
+    color: var(--ol-text);
+  }
+  .prose pre {
+    background: var(--ol-code-bg);
+    border: 1px solid var(--ol-code-border);
+    border-radius: var(--ol-radius-sm);
+    padding: 12px 16px;
+    overflow-x: auto;
+    margin: 0 0 var(--ol-space-5);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .prose pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--ol-text-secondary);
+    font-size: inherit;
+  }
+  /* Callout box: the design's bordered "Note" panel. Reused for `>` blockquotes. */
+  .prose blockquote {
+    margin: 0 0 var(--ol-space-5);
+    padding: 14px 16px;
+    border-radius: var(--ol-radius-xs);
+    background: var(--ol-surface);
+    border: 1px solid var(--ol-border);
+    color: var(--ol-text-secondary);
+  }
+  .prose blockquote p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .prose blockquote p + p {
+    margin-top: 4px;
+  }
+  /* Ordered lists render as the design's numbered step badges. Markers are
+     absolutely positioned (not flex) so the list item's inline content
+     (text/strong/code/a) keeps flowing and wrapping normally. */
+  .prose ol {
+    list-style: none;
+    margin: 0 0 var(--ol-space-5);
+    padding: 0;
+    counter-reset: step;
+  }
+  .prose ol > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 36px;
+    min-height: 24px;
+    margin: 0 0 10px;
+  }
+  .prose ol > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--ol-border-strong);
+    font-family: var(--ol-font-ui);
+    font-size: 13px;
+    font-weight: var(--ol-weight-semibold);
+    color: var(--ol-text);
+  }
+  /* Unordered lists render as the design's small square-bullet list. */
+  .prose ul {
+    list-style: none;
+    margin: 0 0 var(--ol-space-4);
+    padding: 0;
+  }
+  .prose ul > li {
+    position: relative;
+    padding-left: 15px;
+    margin: 0 0 8px;
+  }
+  .prose ul > li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 5px;
+    height: 5px;
+    background: var(--ol-text-muted);
+  }
+  .prose li > ul,
+  .prose li > ol {
+    margin-top: 6px;
+    margin-left: var(--ol-space-4);
+  }
+  .prose hr {
+    border: none;
+    border-top: 1px solid var(--ol-border);
+    margin: var(--ol-space-8) 0;
+  }
+  .prose figure {
+    margin: 0 0 var(--ol-space-6);
+  }
+  .prose figure .docs-shot {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--ol-border);
+    border-radius: var(--ol-radius-xs);
+    box-shadow: var(--ol-elev-2);
+    background: var(--ol-surface);
+  }
+  /* Real product captures: theme-aware (dark shown by default; light swaps in). */
+  .prose figure .docs-shot-img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .prose figure .docs-shot-light {
+    display: none;
+  }
+  :root[data-theme='light'] .prose figure .docs-shot-dark {
+    display: none;
+  }
+  :root[data-theme='light'] .prose figure .docs-shot-light {
+    display: block;
+  }
+  /* Fallback for any remaining placeholder (no image). */
+  .prose figure .docs-shot:has(.docs-shot-glyph) {
+    aspect-ratio: 16 / 10;
+    display: grid;
+    place-items: center;
+  }
+  .prose figure .docs-shot-glyph {
+    font-family: var(--ol-font-mono);
+    font-size: 12px;
+    letter-spacing: var(--ol-tracking-wide);
+    text-transform: uppercase;
+    color: var(--ol-text-faint);
+  }
+  .prose figcaption {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--ol-text-muted);
+  }
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 var(--ol-space-5);
+    font-size: 14px;
+    border: 1px solid var(--ol-border);
+    border-radius: var(--ol-radius-xs);
+    overflow: hidden;
+  }
+  .prose th,
+  .prose td {
+    text-align: left;
+    padding: 11px 14px;
+    vertical-align: top;
+  }
+  .prose thead th {
+    font-family: var(--ol-font-ui);
+    font-size: 12px;
+    font-weight: var(--ol-weight-semibold);
+    color: var(--ol-text-muted);
+    background: var(--ol-surface-raised);
+    border-bottom: 1px solid var(--ol-border);
+    white-space: nowrap;
+  }
+  .prose tbody td,
+  .prose tbody th {
+    border-top: 1px solid var(--ol-border-subtle);
+    color: var(--ol-text);
+  }
+  .prose tbody td:not(:first-child) {
+    color: var(--ol-text-secondary);
+  }
+  /* Wide docs tables scroll horizontally instead of overflowing on phones. */
+  @media (max-width: 640px) {
+    .prose table {
+      display: block;
+      overflow-x: auto;
+    }
+  }
+</style>

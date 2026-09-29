@@ -1,0 +1,50 @@
+rules:
+  - id: auth.oauth.no-pkce
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: |
+      OAuth authorization request from a public client omits the PKCE `code_challenge` parameter.
+      The request looks like a public client (SPA, mobile, or native app) yet
+      carries no `code_challenge`. Without PKCE, the authorization code can be
+      intercepted and exchanged by an attacker.
+
+      RFC 8252 §6 mandates PKCE for native/SPA clients. RFC 9700 (OAuth 2.0
+      Security BCP) recommends PKCE for ALL clients, including confidential
+      ones, as defence in depth.
+
+      Generate a `code_verifier` (43-128 char), derive `code_challenge =
+      BASE64URL-NoPad(SHA256(code_verifier))`, send it with
+      `code_challenge_method=S256` on the authorize call, and POST the
+      `code_verifier` on the token call.
+    pattern-either:
+      # Inline authorize URL: any provider's authorize endpoint carrying an
+      # authorization-code request (client_id + response_type=code) with no
+      # code_challenge. The path is not hardcoded (Google uses /o/oauth2/v2/auth,
+      # Auth0/Okta /authorize, GitHub /oauth/authorize, …).
+      - patterns:
+          - pattern-regex: |-
+              ['"]https?://[^'"\s]+\?[^'"]*response_type=code[^'"]*['"]
+          - pattern-regex: |-
+              client_id=
+          - pattern-not-regex: |-
+              code_challenge
+      # Programmatic URLSearchParams build (AST object match, robust to key
+      # order and object length, unlike a char-window regex).
+      - patterns:
+          - pattern: 'new URLSearchParams({..., client_id: $C, ...})'
+          - pattern-either:
+              - pattern: "new URLSearchParams({..., response_type: 'code', ...})"
+              - pattern: 'new URLSearchParams({..., response_type: "code", ...})'
+          - pattern-not: 'new URLSearchParams({..., code_challenge: $X, ...})'
+    metadata:
+      oauthlint-rule-id: AUTH-OAUTH-004
+      oauthlint-doc-url: https://oauthlint.dev/rules/oauth-no-pkce
+      category: security
+      cwe: CWE-345
+      owasp: API1:2023
+      llm-prevalence: HIGH
+      references:
+        - https://datatracker.ietf.org/doc/html/rfc7636
+        - https://datatracker.ietf.org/doc/html/rfc8252#section-6

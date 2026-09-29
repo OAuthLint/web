@@ -1,0 +1,70 @@
+rules:
+  - id: auth.nextauth.redirect-open
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: |
+      The NextAuth/Auth.js `redirect` callback returns the incoming `url`
+      without validating it against `baseUrl`.
+
+      `url` is attacker-controllable (it comes from the `callbackUrl` request
+      parameter), so returning it verbatim turns your sign-in flow into an open
+      redirect: `/api/auth/signin?callbackUrl=https://evil.example` lands the
+      user on the attacker's site after login. Only return a `url` you have
+      confirmed is local, for example
+      `return url.startsWith(baseUrl) ? url : baseUrl` (and resolve relative
+      paths against `baseUrl` yourself).
+    # Anchored to the `callbacks: {...}` object of a real NextAuth/Auth.js config
+    # so a stray `redirect` helper on some other object never fires. We flag ONLY
+    # a `redirect` callback whose body is exactly `return url` with no validation
+    # at all. A correct callback that guards the value first
+    # (`if (url.startsWith(...))`, `new URL(url)`) has a multi-statement body, so
+    # the no-ellipsis body never matches it.
+    #
+    # The callback is expressed as `{ redirect($P) { return url; } }`, a redirect
+    # property on an object whose function body is exactly `return url`. Semgrep
+    # normalises the function shape, so this one pattern matches the
+    # method-shorthand (`redirect(p) {...}` / `async redirect(p) {...}`) AND the
+    # arrow forms (`redirect: (p) => url`, `redirect: async (p) => { return url }`)
+    # alike. It must be wrapped in an object literal rather than written as a bare
+    # `redirect($P) {...}`: a bare method shorthand is not standalone-parseable and
+    # the engine rejects it with an "Invalid pattern for JavaScript" parse error.
+    patterns:
+      - pattern-inside: 'callbacks: {...}'
+      - pattern-either:
+          - pattern-inside: 'NextAuth({...})'
+          - pattern-inside: 'NextAuth($A, {...})'
+          - pattern-inside: 'NextAuth($A, $B, {...})'
+          - pattern-inside: 'Auth($A, {...})'
+          - pattern-inside: 'authOptions = {...}'
+          - pattern-inside: 'authConfig = {...}'
+          - pattern-inside: '$X: NextAuthOptions = {...}'
+          - pattern-inside: '$X: NextAuthConfig = {...}'
+          - pattern-inside: '$X: AuthOptions = {...}'
+      - pattern: '{ redirect($P) { return url; } }'
+    # Keep the rule off test, example, and dev-playground trees, where demo
+    # configs intentionally use these shapes; it still fires on its own fixtures
+    # under rules/tests/fixtures/ (whose path has no such segment).
+    paths:
+      exclude:
+        - "**/test/**"
+        - "**/__tests__/**"
+        - "**/*.test.*"
+        - "**/*.spec.*"
+        - "**/example/**"
+        - "**/examples/**"
+        - "**/demo/**"
+        - "**/dev/**"
+    metadata:
+      oauthlint-rule-id: AUTH-NEXTAUTH-002
+      oauthlint-doc-url: https://oauthlint.dev/rules/nextauth-redirect-open
+      category: security
+      cwe: CWE-601
+      owasp: A01:2021
+      llm-prevalence: HIGH
+      technology:
+        - next-auth
+      references:
+        - https://authjs.dev/reference/core/types#redirect
+        - https://cwe.mitre.org/data/definitions/601.html

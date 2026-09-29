@@ -1,0 +1,67 @@
+rules:
+  - id: auth.jwt.algorithm-confusion
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: |
+      A JWT is being verified with HS256 (a symmetric algorithm) but the
+      key looks like an RSA / EC public key in PEM format. This is the
+      "algorithm confusion" attack: an attacker can sign forged tokens
+      with the public key and your code will happily verify them with
+      HMAC-SHA256 treating the PEM string as the shared secret.
+
+      Always pin the algorithm to the asymmetric one you actually use
+      (e.g. `algorithms: ['RS256']`) and pass the public key only when
+      verifying asymmetric tokens.
+
+      RFC 7518 §3.1: the "alg" header must be matched to the key type.
+    # Algorithm confusion = verifying with an HMAC algorithm (HS*) while the key
+    # is an asymmetric PUBLIC key. The attacker signs with HS* using the public
+    # key as the shared secret. We match either an inline PEM literal OR a key
+    # bound to a public-key-named variable (the common real-world shape), in
+    # both cases combined with an HS* algorithm.
+    pattern-either:
+      - patterns:
+          - pattern: 'jwt.verify($TOKEN, $KEY, $OPTS)'
+          - metavariable-regex:
+              metavariable: $KEY
+              regex: '-----BEGIN [A-Z ]*PUBLIC KEY-----'
+          - metavariable-pattern:
+              metavariable: $OPTS
+              patterns:
+                - pattern-either:
+                    - pattern: '{..., algorithms: ["HS256", ...], ...}'
+                    - pattern: '{..., algorithms: ["HS384", ...], ...}'
+                    - pattern: '{..., algorithms: ["HS512", ...], ...}'
+      - patterns:
+          - pattern: 'jwt.verify($TOKEN, $KEY)'
+          - metavariable-regex:
+              metavariable: $KEY
+              regex: '-----BEGIN [A-Z ]*PUBLIC KEY-----'
+      # Key is a public-key-named variable (RSA_PUBLIC, publicKey, pubKey, …)
+      # verified with an HS* algorithm.
+      - patterns:
+          - pattern: 'jwt.verify($TOKEN, $KEY, $OPTS)'
+          - metavariable-regex:
+              metavariable: $KEY
+              regex: '(?i).*pub(lic)?'
+          - metavariable-pattern:
+              metavariable: $OPTS
+              patterns:
+                - pattern-either:
+                    - pattern: '{..., algorithms: ["HS256", ...], ...}'
+                    - pattern: '{..., algorithms: ["HS384", ...], ...}'
+                    - pattern: '{..., algorithms: ["HS512", ...], ...}'
+    metadata:
+      oauthlint-rule-id: AUTH-JWT-007
+      oauthlint-doc-url: https://oauthlint.dev/rules/jwt-algorithm-confusion
+      category: security
+      cwe: CWE-327
+      owasp: API2:2023
+      llm-prevalence: MEDIUM
+      technology:
+        - jsonwebtoken
+      references:
+        - https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
+        - https://owasp.org/www-project-api-security/

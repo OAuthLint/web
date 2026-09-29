@@ -1,0 +1,61 @@
+rules:
+  - id: auth.cookie.no-secure
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: |
+      A cookie that looks like a session or auth cookie is being set WITHOUT
+      the `Secure` flag. The browser will happily send it over plain HTTP,
+      which means a network attacker (open Wi-Fi, malicious proxy, downgrade
+      attack) can capture it.
+
+      Add `{ secure: true }` to the cookie options. If you absolutely need
+      to set Secure-less cookies in dev, gate it on `NODE_ENV !== 'production'`.
+    pattern-either:
+      - patterns:
+          - pattern: $RES.cookie($NAME, $VAL, $OPTS)
+          - metavariable-regex:
+              metavariable: $NAME
+              regex: ^(['"])(?:[a-zA-Z0-9_-]*(?:session|sid|sess|auth|token|jwt|refresh|access)[a-zA-Z0-9_-]*)\1$
+          - metavariable-pattern:
+              metavariable: $OPTS
+              patterns:
+                - pattern-not: '{..., secure: true, ...}'
+                - pattern-not: '{..., secure: $X, ...}'
+                - pattern: '{...}'
+      # Secure explicitly disabled: the exact bug, must fire (the `secure: $X`
+      # suppression above would otherwise treat `secure: false` as compliant).
+      - patterns:
+          - pattern: $RES.cookie($NAME, $VAL, $OPTS)
+          - metavariable-regex:
+              metavariable: $NAME
+              regex: ^(['"])(?:[a-zA-Z0-9_-]*(?:session|sid|sess|auth|token|jwt|refresh|access)[a-zA-Z0-9_-]*)\1$
+          - metavariable-pattern:
+              metavariable: $OPTS
+              pattern: '{..., secure: false, ...}'
+      - patterns:
+          - pattern: $RES.cookie($NAME, $VAL)
+          - metavariable-regex:
+              metavariable: $NAME
+              regex: ^(['"])(?:[a-zA-Z0-9_-]*(?:session|sid|sess|auth|token|jwt|refresh|access)[a-zA-Z0-9_-]*)\1$
+    # No autofix. A single rule-level `fix:` cannot be made safe here: this rule
+    # matches three shapes: an options object missing `secure`, the 2-arg form
+    # with no options object at all, and an explicit `secure: false`. A spread
+    # template like `{ ...$OPTS, secure: true }` corrupts the 2-arg form (`$OPTS`
+    # is unbound, so Semgrep emits the literal text `$OPTS`) and leaves an
+    # explicit `secure: false` key in place (the finding re-fires). Inserting a
+    # brand-new argument/key is not a clean literal replacement, so we ship no
+    # `fix:` rather than a rewrite that can break source.
+    metadata:
+      oauthlint-rule-id: AUTH-COOKIE-001
+      oauthlint-doc-url: https://oauthlint.dev/rules/cookie-no-secure
+      category: security
+      cwe: CWE-614
+      owasp: API8:2023
+      llm-prevalence: HIGH
+      technology:
+        - express
+        - fastify
+      references:
+        - https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.5

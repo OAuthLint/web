@@ -1,0 +1,208 @@
+<style>
+
+    .sc-placeholder{background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;overflow:hidden}
+    @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+    html.sc-dc-streaming .sc-placeholder,
+    html.sc-dc-streaming .sc-interp.sc-missing{position:relative;
+      background:color-mix(in srgb,currentColor 5%,transparent);
+      border-color:transparent}
+    html.sc-dc-streaming .sc-placeholder::before,
+    html.sc-dc-streaming .sc-interp.sc-missing::before{content:'';
+      position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(90deg,rgba(217,119,87,0) 25%,rgba(247,225,211,.95) 37%,rgba(217,119,87,0) 63%);
+      background-size:400% 100%;animation:sc-shine 1.4s ease infinite}
+    html.sc-dc-streaming .sc-placeholder:nth-child(n+9 of .sc-placeholder)::before,
+    html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
+      background:color-mix(in srgb,currentColor 8%,transparent)}
+    .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
+      color:rgba(0,0,0,.7);word-break:break-word}
+    .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
+      vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+      border-radius:2px;box-sizing:border-box;color:transparent;
+      user-select:none}
+    .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
+      color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-radius:3px;
+      padding:0 3px}
+    .sc-host.sc-has-error{position:relative}
+    .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
+      padding:6px 10px;background:#b00020;color:#fff;font:12px/1.4 ui-monospace,monospace;
+      border-radius:4px;white-space:pre-wrap;pointer-events:none}
+    /* Mirrors PRINT_BASELINE_CSS in apps/web deck-stage-export.ts — keep both
+       in sync until dc-runtime regains a build step. */
+    @media print {
+      @page { margin: 0.5cm; }
+      figure, table { break-inside: avoid; }
+      #dc-root, #dc-root > .sc-host { height: auto; }
+      *, *::before, *::after {
+        print-color-adjust: exact; -webkit-print-color-adjust: exact;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        animation-delay: -99s !important; animation-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+        animation-play-state: running !important; transition-duration: 0s !important;
+      }
+    }
+  
+x-dc{display:none!important}
+
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--ol-page); color: var(--ol-text); font-family: var(--ol-font-ui); -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ol-accent-700); color: var(--ol-neutral-50); }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--ol-focus-ring); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .001ms !important; } }
+  @media (max-width: 760px) { [data-kpis] { grid-template-columns: 1fr 1fr !important; } [data-split] { grid-template-columns: 1fr !important; } [data-split] > div:first-child { border-right: none !important; border-bottom: 1px solid var(--ol-border) !important; } [data-navlinks] { display:none !important; } }
+
+</style>
+<div id="dc-root"><div class="sc-host" data-sc-name="Research"><div data-dc-tpl="13" style="min-height: 100vh; background-color: var(--ol-page);">
+
+  <nav data-dc-tpl="14" style="position: sticky; top: 0px; z-index: 50; display: flex; align-items: center; gap: var(--ol-space-6); padding: 0 var(--ol-space-6); height: 56px; background: color-mix(in oklch, var(--ol-page) 88%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--ol-border);">
+    <a data-dc-tpl="15" href="/" aria-label="OAuthLint home" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ol-text);">
+      <svg data-dc-tpl="16" width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect data-dc-tpl="17" x="13" y="11" width="38" height="27" stroke="var(--ol-accent)" stroke-width="5"></rect><path data-dc-tpl="18" d="M11 50c3-5 6-5 9 0s6 5 9 0 6-5 9 0 6 5 9 0" stroke="var(--ol-sev-critical)" stroke-width="5" stroke-linecap="round"></path></svg>
+      <span data-dc-tpl="19" style="font-family: var(--ol-font-display); font-weight: 700; font-size: 16px; letter-spacing: -0.02em;">OAuthLint</span>
+    </a>
+    <div data-dc-tpl="20" style="flex: 1 1 0%;"></div>
+    <div data-dc-tpl="21" data-navlinks="" style="display: flex; align-items: center; gap: var(--ol-space-6);">
+      <a data-dc-tpl="22" href="/docs" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; font-weight: 500; color: var(--ol-text-secondary); text-decoration: none;">Docs</a>
+      <a data-dc-tpl="23" href="/rules" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; font-weight: 500; color: var(--ol-text-secondary); text-decoration: none;">Rules</a>
+      <a data-dc-tpl="24" href="/pricing" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; font-weight: 500; color: var(--ol-text-secondary); text-decoration: none;">Pricing</a>
+      <a data-dc-tpl="25" href="/security" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; font-weight: 500; color: var(--ol-text-secondary); text-decoration: none;">Security</a>
+    </div>
+    <div data-dc-tpl="26" style="display: flex; align-items: center; gap: 6px; margin-left: var(--ol-space-6);">
+      <button data-dc-tpl="27" aria-label="Toggle light or dark theme" title="Toggle theme" class="scp1" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--ol-surface); border: 1px solid var(--ol-border-strong); color: var(--ol-text-secondary); cursor: pointer; transition: border-color var(--ol-dur-fast) var(--ol-ease-standard); border-radius: 3px;"><svg data-dc-tpl="29" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path data-dc-tpl="30" d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"></path></svg></button>
+      <a data-dc-tpl="35" href="https://github.com/OAuthLint/oauthlint" target="_blank" rel="noopener" aria-label="OAuthLint on GitHub" title="GitHub" class="scp2" style="display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 3px; color: var(--ol-text-secondary); text-decoration: none;"><svg data-dc-tpl="36" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path data-dc-tpl="37" d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.85 9.73.5.1.68-.22.68-.49v-1.7c-2.79.62-3.38-1.22-3.38-1.22-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.94.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05A9.4 9.4 0 0112 6.84c.85 0 1.71.12 2.51.34 1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.26 10.26 0 0022 12.25C22 6.58 17.52 2 12 2z"></path></svg></a>
+      <a data-dc-tpl="38" href="https://app.oauthlint.dev/login" class="scp0" style="display: inline-flex; align-items: center; height: 34px; padding: 0px 12px; font-family: var(--ol-font-ui); font-size: 14px; font-weight: 500; color: var(--ol-text-secondary); text-decoration: none;">Sign in</a>
+      <a data-dc-tpl="39" href="https://app.oauthlint.dev/signup" style="display: inline-flex; align-items: center; height: 34px; padding: 0px 14px; border-radius: 3px; background: var(--ol-accent); color: var(--ol-accent-fg); font-family: var(--ol-font-ui); font-size: 14px; font-weight: 600; text-decoration: none;">Start free</a>
+    </div>
+  </nav>
+
+  <main data-dc-tpl="40" style="max-width: 1120px; margin: 0px auto; padding: var(--ol-space-12) var(--ol-space-6) var(--ol-space-20);">
+    
+    <h1 data-dc-tpl="41" style="font-family: var(--ol-font-display); font-weight: 700; font-size: var(--ol-text-display-l); letter-spacing: -0.03em; margin: 0 0 var(--ol-space-4); line-height: 1.1; max-width: 22ch;">What auth bugs does AI-generated code actually ship?</h1>
+    <p data-dc-tpl="42" style="font-size: var(--ol-text-body-l); line-height: var(--ol-leading-relaxed); color: var(--ol-text-secondary); max-width: 64ch; margin: 0 0 var(--ol-space-6);">We scanned public repositories that self-identify as AI-generated or vibe-coded with OAuthLint and counted what it found. Every figure below is aggregate: no repository, organisation, person, or AI tool is named or identifiable.</p>
+    <p data-dc-tpl="43" class="tnum" style="margin: 0 0 var(--ol-space-10); font-size: 13px; color: var(--ol-text-muted); font-variant-numeric: tabular-nums;">Snapshot <span class="sc-interp">2026-06-27</span> · OAuthLint <span class="sc-interp">0.4.0</span> · Report <span class="sc-interp">v0.4</span></p>
+
+    
+    <div data-dc-tpl="44" data-kpis="" style="display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--ol-border); margin-bottom: var(--ol-space-10); border-radius: 3px;">
+      <div data-dc-tpl="45" style="padding: var(--ol-space-6); border-right: 1px solid var(--ol-border);"><div data-dc-tpl="46" style="font-family: var(--ol-font-display); font-weight: 700; font-size: clamp(2.1rem, 5vw, 2.9rem); line-height: 0.95; letter-spacing: -0.03em;"><span class="sc-interp">132</span></div><div data-dc-tpl="47" style="font-size: 13px; color: var(--ol-text-muted); margin-top: var(--ol-space-2);">Repositories scanned</div></div>
+      <div data-dc-tpl="48" style="padding: var(--ol-space-6); border-right: 1px solid var(--ol-border);"><div data-dc-tpl="49" style="font-family: var(--ol-font-display); font-weight: 700; font-size: clamp(2.1rem, 5vw, 2.9rem); line-height: 0.95; letter-spacing: -0.03em;"><span class="sc-interp">27%</span></div><div data-dc-tpl="50" style="font-size: 13px; color: var(--ol-text-muted); margin-top: var(--ol-space-2);">Had at least one finding</div></div>
+      <div data-dc-tpl="51" style="padding: var(--ol-space-6); border-right: 1px solid var(--ol-border);"><div data-dc-tpl="52" style="font-family: var(--ol-font-display); font-weight: 700; font-size: clamp(2.1rem, 5vw, 2.9rem); line-height: 0.95; letter-spacing: -0.03em; color: var(--ol-sev-high);"><span class="sc-interp">18%</span></div><div data-dc-tpl="53" style="font-size: 13px; color: var(--ol-text-muted); margin-top: var(--ol-space-2);">Had a high or critical finding</div></div>
+      <div data-dc-tpl="54" style="padding: var(--ol-space-6);"><div data-dc-tpl="55" style="font-family: var(--ol-font-display); font-weight: 700; font-size: clamp(2.1rem, 5vw, 2.9rem); line-height: 0.95; letter-spacing: -0.03em;"><span class="sc-interp">57%</span></div><div data-dc-tpl="56" style="font-size: 13px; color: var(--ol-text-muted); margin-top: var(--ol-space-2);">Of findings on rules common in AI code</div></div>
+    </div>
+
+    
+    <h2 data-dc-tpl="57" style="font-family: var(--ol-font-ui); font-weight: 600; font-size: var(--ol-text-heading-l); margin: 0 0 var(--ol-space-4);">Most common patterns</h2>
+    <div data-dc-tpl="58" style="border: 1px solid var(--ol-border); margin-bottom: var(--ol-space-10); border-radius: 3px;">
+      <div data-dc-tpl="59" style="overflow-x: auto;">
+        <div data-dc-tpl="60" style="min-width: 560px;">
+          <div data-dc-tpl="61" style="display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(86px, 1fr)); border-bottom: 1px solid var(--ol-border); background: var(--ol-surface-raised);">
+            <div data-dc-tpl="62" style="padding: 11px 16px; font-size: 12px; font-weight: 600; color: var(--ol-text-muted);">Pattern</div>
+            <div data-dc-tpl="63" style="padding: 11px 12px; border-left: 1px solid var(--ol-border); font-size: 12px; font-weight: 600; color: var(--ol-text-muted);">CWE</div>
+            <div data-dc-tpl="64" style="padding: 11px 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 12px; font-weight: 600; color: var(--ol-text-muted);">Findings</div>
+            <div data-dc-tpl="65" style="padding: 11px 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 12px; font-weight: 600; color: var(--ol-text-muted);">Share of repositories</div>
+          </div>
+          
+            <div data-dc-tpl="67" style="display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(86px, 1fr)); border-bottom: 1px solid var(--ol-border-subtle);">
+              <div data-dc-tpl="68" style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;"><span data-dc-tpl="69" style="font-size: 14px; color: var(--ol-text);"><span class="sc-interp">Non-constant-time secret comparison</span></span></div>
+              <div data-dc-tpl="70" style="padding: 12px; border-left: 1px solid var(--ol-border); font-family: var(--ol-font-mono); font-size: 12px; color: var(--ol-text-muted); display: flex; align-items: center;"><span class="sc-interp">CWE-208</span></div>
+              <div data-dc-tpl="71" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; gap: 10px;"><span class="sc-interp">75</span></div>
+              <div data-dc-tpl="72" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end;"><span class="sc-interp">13%</span></div>
+            </div>
+          
+            <div data-dc-tpl="67" style="display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(86px, 1fr)); border-bottom: 1px solid var(--ol-border-subtle);">
+              <div data-dc-tpl="68" style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;"><span data-dc-tpl="69" style="font-size: 14px; color: var(--ol-text);"><span class="sc-interp">Auth tokens in browser storage</span></span></div>
+              <div data-dc-tpl="70" style="padding: 12px; border-left: 1px solid var(--ol-border); font-family: var(--ol-font-mono); font-size: 12px; color: var(--ol-text-muted); display: flex; align-items: center;"><span class="sc-interp">CWE-922</span></div>
+              <div data-dc-tpl="71" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; gap: 10px;"><span class="sc-interp">60</span></div>
+              <div data-dc-tpl="72" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end;"><span class="sc-interp">8%</span></div>
+            </div>
+          
+            <div data-dc-tpl="67" style="display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(86px, 1fr)); border-bottom: 1px solid var(--ol-border-subtle);">
+              <div data-dc-tpl="68" style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;"><span data-dc-tpl="69" style="font-size: 14px; color: var(--ol-text);"><span class="sc-interp">Session identifier in the URL</span></span></div>
+              <div data-dc-tpl="70" style="padding: 12px; border-left: 1px solid var(--ol-border); font-family: var(--ol-font-mono); font-size: 12px; color: var(--ol-text-muted); display: flex; align-items: center;"><span class="sc-interp">CWE-598</span></div>
+              <div data-dc-tpl="71" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; gap: 10px;"><span class="sc-interp">27</span></div>
+              <div data-dc-tpl="72" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end;"><span class="sc-interp">8%</span></div>
+            </div>
+          
+            <div data-dc-tpl="67" style="display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(86px, 1fr)); border-bottom: 1px solid var(--ol-border-subtle);">
+              <div data-dc-tpl="68" style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;"><span data-dc-tpl="69" style="font-size: 14px; color: var(--ol-text);"><span class="sc-interp">Hard-coded provider / API keys</span></span></div>
+              <div data-dc-tpl="70" style="padding: 12px; border-left: 1px solid var(--ol-border); font-family: var(--ol-font-mono); font-size: 12px; color: var(--ol-text-muted); display: flex; align-items: center;"><span class="sc-interp">CWE-798</span></div>
+              <div data-dc-tpl="71" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; gap: 10px;"><span class="sc-interp">27</span></div>
+              <div data-dc-tpl="72" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end;"><span class="sc-interp">5%</span></div>
+            </div>
+          
+            <div data-dc-tpl="67" style="display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(86px, 1fr)); border-bottom: 1px solid var(--ol-border-subtle);">
+              <div data-dc-tpl="68" style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;"><span data-dc-tpl="69" style="font-size: 14px; color: var(--ol-text);"><span class="sc-interp">No rate limiting on auth endpoints</span></span></div>
+              <div data-dc-tpl="70" style="padding: 12px; border-left: 1px solid var(--ol-border); font-family: var(--ol-font-mono); font-size: 12px; color: var(--ol-text-muted); display: flex; align-items: center;"><span class="sc-interp">CWE-307</span></div>
+              <div data-dc-tpl="71" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; gap: 10px;"><span class="sc-interp">23</span></div>
+              <div data-dc-tpl="72" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end;"><span class="sc-interp">4%</span></div>
+            </div>
+          
+            <div data-dc-tpl="67" style="display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(86px, 1fr)); border-bottom: 1px solid var(--ol-border-subtle);">
+              <div data-dc-tpl="68" style="padding: 12px 16px; display: flex; align-items: center; gap: 10px;"><span data-dc-tpl="69" style="font-size: 14px; color: var(--ol-text);"><span class="sc-interp">Secrets written to logs</span></span></div>
+              <div data-dc-tpl="70" style="padding: 12px; border-left: 1px solid var(--ol-border); font-family: var(--ol-font-mono); font-size: 12px; color: var(--ol-text-muted); display: flex; align-items: center;"><span class="sc-interp">CWE-532</span></div>
+              <div data-dc-tpl="71" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end; gap: 10px;"><span class="sc-interp">8</span></div>
+              <div data-dc-tpl="72" style="padding: 12px; text-align: right; border-left: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: flex-end;"><span class="sc-interp">2%</span></div>
+            </div>
+          
+        </div>
+      </div>
+      <div data-dc-tpl="73" style="padding: 12px 16px; border-top: 1px solid var(--ol-border); font-size: 13px; color: var(--ol-text-muted);">Aggregate counts only. No repository, organisation or AI tool is named.</div>
+    </div>
+
+    
+    <div data-dc-tpl="74" data-split="" style="display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--ol-border); margin-bottom: var(--ol-space-10); border-radius: 3px;">
+      <div data-dc-tpl="75" style="padding: var(--ol-space-6); border-right: 1px solid var(--ol-border);">
+        <h3 data-dc-tpl="76" style="font-family: var(--ol-font-ui); font-weight: 600; font-size: var(--ol-text-heading-s); margin: 0 0 var(--ol-space-4);">Severity of all findings</h3>
+        <div data-dc-tpl="77" style="display: flex; height: 10px; border: 1px solid var(--ol-border); overflow: hidden; margin-bottom: 12px; border-radius: 3px;">
+          <div data-dc-tpl="78" style="width: 27%; background: var(--ol-sev-high);"></div><div data-dc-tpl="79" style="width: 63%; background: var(--ol-sev-medium);"></div><div data-dc-tpl="80" style="width: 10%; background: var(--ol-sev-low);"></div>
+        </div>
+        <div data-dc-tpl="81" class="tnum" style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; font-variant-numeric: tabular-nums;">
+          <span data-dc-tpl="82" style="display: inline-flex; align-items: center; gap: 7px; color: var(--ol-text-secondary);"><span data-dc-tpl="83" style="width: 8px; height: 8px; flex: 0 0 auto; background: var(--ol-sev-high);"></span>High <span class="sc-interp">77</span></span>
+          <span data-dc-tpl="84" style="display: inline-flex; align-items: center; gap: 7px; color: var(--ol-text-secondary);"><span data-dc-tpl="85" style="width: 8px; height: 8px; flex: 0 0 auto; background: var(--ol-sev-medium);"></span>Medium <span class="sc-interp">178</span></span>
+          <span data-dc-tpl="86" style="display: inline-flex; align-items: center; gap: 7px; color: var(--ol-text-secondary);"><span data-dc-tpl="87" style="width: 8px; height: 8px; flex: 0 0 auto; background: var(--ol-sev-low);"></span>Low <span class="sc-interp">28</span></span>
+        </div>
+        <p data-dc-tpl="88" style="font-size: var(--ol-text-body-s); color: var(--ol-text-muted); line-height: 1.55; margin: var(--ol-space-4) 0 0;"><span class="sc-interp">283</span> findings across <span class="sc-interp">35</span> affected repositories, a mean of <span class="sc-interp">8.1</span> per affected repository.</p>
+      </div>
+      <div data-dc-tpl="89" style="padding: var(--ol-space-6);">
+        <h3 data-dc-tpl="90" style="font-family: var(--ol-font-ui); font-weight: 600; font-size: var(--ol-text-heading-s); margin: 0 0 var(--ol-space-4);">Findings by rule category</h3>
+        <div data-dc-tpl="91" style="display: flex; flex-direction: column; gap: 9px;">
+          
+            <div data-dc-tpl="93" style="display: grid; grid-template-columns: 72px 1fr 40px; align-items: center; gap: 12px;"><span data-dc-tpl="94" style="font-size: 13px; color: var(--ol-text-secondary);"><span class="sc-interp">flow</span></span><div data-dc-tpl="95" style="height: 8px; background: var(--ol-overlay);"><div data-dc-tpl="96" style="height: 100%; width: 100%; background: var(--ol-accent);"></div></div><span data-dc-tpl="97" style="font-size: 13px; color: var(--ol-text-muted); text-align: right; font-variant-numeric: tabular-nums;"><span class="sc-interp">115</span></span></div>
+          
+            <div data-dc-tpl="93" style="display: grid; grid-template-columns: 72px 1fr 40px; align-items: center; gap: 12px;"><span data-dc-tpl="94" style="font-size: 13px; color: var(--ol-text-secondary);"><span class="sc-interp">jwt</span></span><div data-dc-tpl="95" style="height: 8px; background: var(--ol-overlay);"><div data-dc-tpl="96" style="height: 100%; width: 66%; background: var(--ol-accent);"></div></div><span data-dc-tpl="97" style="font-size: 13px; color: var(--ol-text-muted); text-align: right; font-variant-numeric: tabular-nums;"><span class="sc-interp">76</span></span></div>
+          
+            <div data-dc-tpl="93" style="display: grid; grid-template-columns: 72px 1fr 40px; align-items: center; gap: 12px;"><span data-dc-tpl="94" style="font-size: 13px; color: var(--ol-text-secondary);"><span class="sc-interp">secret</span></span><div data-dc-tpl="95" style="height: 8px; background: var(--ol-overlay);"><div data-dc-tpl="96" style="height: 100%; width: 24%; background: var(--ol-accent);"></div></div><span data-dc-tpl="97" style="font-size: 13px; color: var(--ol-text-muted); text-align: right; font-variant-numeric: tabular-nums;"><span class="sc-interp">28</span></span></div>
+          
+            <div data-dc-tpl="93" style="display: grid; grid-template-columns: 72px 1fr 40px; align-items: center; gap: 12px;"><span data-dc-tpl="94" style="font-size: 13px; color: var(--ol-text-secondary);"><span class="sc-interp">session</span></span><div data-dc-tpl="95" style="height: 8px; background: var(--ol-overlay);"><div data-dc-tpl="96" style="height: 100%; width: 23%; background: var(--ol-accent);"></div></div><span data-dc-tpl="97" style="font-size: 13px; color: var(--ol-text-muted); text-align: right; font-variant-numeric: tabular-nums;"><span class="sc-interp">27</span></span></div>
+          
+            <div data-dc-tpl="93" style="display: grid; grid-template-columns: 72px 1fr 40px; align-items: center; gap: 12px;"><span data-dc-tpl="94" style="font-size: 13px; color: var(--ol-text-secondary);"><span class="sc-interp">oauth</span></span><div data-dc-tpl="95" style="height: 8px; background: var(--ol-overlay);"><div data-dc-tpl="96" style="height: 100%; width: 14%; background: var(--ol-accent);"></div></div><span data-dc-tpl="97" style="font-size: 13px; color: var(--ol-text-muted); text-align: right; font-variant-numeric: tabular-nums;"><span class="sc-interp">16</span></span></div>
+          
+            <div data-dc-tpl="93" style="display: grid; grid-template-columns: 72px 1fr 40px; align-items: center; gap: 12px;"><span data-dc-tpl="94" style="font-size: 13px; color: var(--ol-text-secondary);"><span class="sc-interp">tls</span></span><div data-dc-tpl="95" style="height: 8px; background: var(--ol-overlay);"><div data-dc-tpl="96" style="height: 100%; width: 5%; background: var(--ol-accent);"></div></div><span data-dc-tpl="97" style="font-size: 13px; color: var(--ol-text-muted); text-align: right; font-variant-numeric: tabular-nums;"><span class="sc-interp">6</span></span></div>
+          
+        </div>
+      </div>
+    </div>
+
+    
+    <h2 data-dc-tpl="98" style="font-family: var(--ol-font-ui); font-weight: 600; font-size: var(--ol-text-heading-l); margin: 0 0 var(--ol-space-3);">Method</h2>
+    <p data-dc-tpl="99" style="font-size: var(--ol-text-body-m); line-height: 1.75; color: var(--ol-text-secondary); margin: 0 0 var(--ol-space-3); max-width: 70ch;">Corpus: public repositories self-identifying as AI-generated or vibe-coded applications. Each was scanned once with the OAuthLint version noted above, using the default rule pack and no suppressions. Findings were counted as reported; nothing was hand-filtered in or out.</p>
+    <p data-dc-tpl="100" style="font-size: var(--ol-text-body-m); line-height: 1.75; color: var(--ol-text-secondary); max-width: 70ch; margin: 0 0 var(--ol-space-3);">Figures are provisional and updated with each snapshot. The dataset description and scripts live in the repository. To reproduce them:</p>
+    <div data-dc-tpl="101" style="display: flex; align-items: center; gap: 2px; max-width: 420px; height: 40px; padding: 0px 4px 0px 14px; background: var(--ol-code-bg); border: 1px solid var(--ol-code-border);">
+      <code data-dc-tpl="102" style="flex: 1 1 0%; min-width: 0px; font-family: var(--ol-font-mono); font-size: 13px; color: var(--ol-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span data-dc-tpl="103" aria-hidden="true" style="color: var(--ol-text-muted);">$ </span>npx oauthlint bench</code>
+      <button data-dc-tpl="104" type="button" data-copy-value="npx oauthlint bench" aria-label="Copy command" title="Copy" class="scp2" style="display: inline-grid; place-items: center; width: 30px; height: 30px; flex: 0 0 auto; background: transparent; border: 0px; border-radius: 3px; color: var(--ol-text-muted); cursor: pointer;"><svg data-dc-tpl="105" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect data-dc-tpl="106" x="9" y="9" width="11" height="11" rx="1"></rect><path data-dc-tpl="107" d="M5 15V5a1 1 0 0 1 1-1h10"></path></svg></button>
+    </div>
+  </main>
+
+  <footer data-dc-tpl="108" style="border-top: 1px solid var(--ol-border); margin-top: var(--ol-space-16);">
+    <div data-dc-tpl="109" style="max-width: 1120px; margin: 0px auto; padding: var(--ol-space-12) var(--ol-space-6); display: grid; grid-template-columns: minmax(0px, 1.4fr) repeat(4, minmax(0px, 1fr)); gap: 32px;">
+      <div data-dc-tpl="110">
+        <a data-dc-tpl="111" href="/" aria-label="OAuthLint home" style="display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ol-text);"><svg data-dc-tpl="112" width="22" height="22" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect data-dc-tpl="113" x="13" y="11" width="38" height="27" stroke="var(--ol-accent)" stroke-width="5"></rect><path data-dc-tpl="114" d="M11 50c3-5 6-5 9 0s6 5 9 0 6-5 9 0 6 5 9 0" stroke="var(--ol-sev-critical)" stroke-width="5" stroke-linecap="round"></path></svg><span data-dc-tpl="115" style="font-family: var(--ol-font-display); font-size: 16px; font-weight: 700; letter-spacing: -0.02em;">OAuthLint</span></a>
+        <p data-dc-tpl="116" style="margin: 12px 0px 0px; font-family: var(--ol-font-ui); font-size: 14px; line-height: 1.6; color: var(--ol-text-muted); max-width: 34ch;">Secure the code your AI writes. Open source, end to end.</p>
+      </div>
+      <div data-dc-tpl="117"><h2 data-dc-tpl="118" style="margin: 0px 0px 12px; font-family: var(--ol-font-ui); font-size: 13px; font-weight: 600; color: var(--ol-text);">Product</h2><ul data-dc-tpl="119" style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 9px;"><li data-dc-tpl="120"><a data-dc-tpl="121" href="/docs" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Docs</a></li><li data-dc-tpl="122"><a data-dc-tpl="123" href="/rules" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Rules</a></li><li data-dc-tpl="124"><a data-dc-tpl="125" href="/pricing" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Pricing</a></li><li data-dc-tpl="126"><a data-dc-tpl="127" href="/changelog" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Changelog</a></li></ul></div>
+      <div data-dc-tpl="128"><h2 data-dc-tpl="129" style="margin: 0px 0px 12px; font-family: var(--ol-font-ui); font-size: 13px; font-weight: 600; color: var(--ol-text);">Trust</h2><ul data-dc-tpl="130" style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 9px;"><li data-dc-tpl="131"><a data-dc-tpl="132" href="/security" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Security</a></li><li data-dc-tpl="133"><a data-dc-tpl="134" href="/research" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Research</a></li><li data-dc-tpl="135"><a data-dc-tpl="136" href="/status" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Status</a></li></ul></div>
+      <div data-dc-tpl="137"><h2 data-dc-tpl="138" style="margin: 0px 0px 12px; font-family: var(--ol-font-ui); font-size: 13px; font-weight: 600; color: var(--ol-text);">Project</h2><ul data-dc-tpl="139" style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 9px;"><li data-dc-tpl="140"><a data-dc-tpl="141" href="/about" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">About</a></li><li data-dc-tpl="142"><a data-dc-tpl="143" href="https://github.com/OAuthLint/oauthlint" target="_blank" rel="noopener" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">GitHub</a></li></ul></div><div data-dc-tpl="144"><h2 data-dc-tpl="145" style="margin: 0px 0px 12px; font-family: var(--ol-font-ui); font-size: 13px; font-weight: 600; color: var(--ol-text);">Legal</h2><ul data-dc-tpl="146" style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 9px;"><li data-dc-tpl="147"><a data-dc-tpl="148" href="/terms" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Terms</a></li><li data-dc-tpl="149"><a data-dc-tpl="150" href="/privacy" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">Privacy</a></li><li data-dc-tpl="151"><a data-dc-tpl="152" href="/dpa" class="scp0" style="font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none;">DPA</a></li></ul></div>
+    </div>
+  </footer></div></div></div>

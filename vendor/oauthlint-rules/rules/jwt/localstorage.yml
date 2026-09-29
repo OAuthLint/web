@@ -1,0 +1,51 @@
+rules:
+  - id: auth.jwt.localstorage
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: |
+      A JWT (or other auth token) is being written to `localStorage`. Any
+      XSS that lands on the page can exfiltrate the token via
+      `localStorage.getItem(...)`, and unlike `HttpOnly` cookies, there
+      is no browser-side mitigation.
+
+      Store auth tokens in an `HttpOnly; Secure; SameSite=Strict` cookie
+      set by the server, or in memory only. `sessionStorage` is no safer
+      against XSS. It's the same attacker capability.
+
+      OWASP ASVS V3.4: tokens must not be stored where untrusted scripts
+      can read them.
+    # The key must contain a strong token word (`token` catches accessToken,
+    # refresh_token, authToken, idToken, sessionToken, …). We deliberately do
+    # NOT match the bare words `auth`/`access`/`refresh`/`session` because they
+    # appear as substrings of innocuous keys (author_filter, auto_refresh,
+    # access_count, sidebar_session) and produced false positives.
+    # A write to web storage (`setItem(k, v)` or `store[k] = v`) is flagged when
+    # EITHER the key is a token-named string literal OR the value is a token-named
+    # identifier. The latter catches `localStorage.setItem(TOKEN_KEY, token)`,
+    # where the key is a variable, the most common real-world shape. We match
+    # only the strong words `token`/`jwt`/`bearer`/`credential`/`api_key` (never
+    # bare `auth`/`access`/`refresh`/`session`, which appear in innocuous keys
+    # like `author_filter`, `auto_refresh`, `access_count`).
+    pattern-either:
+      # `setItem(key, value)` where a strong token word appears in EITHER the key
+      # or the value. Matching the whole call as one range (rather than separate
+      # key/value patterns) catches `setItem(TOKEN_KEY, token)`, the common shape
+      # where the key is a variable, without double-counting literal-key lines.
+      - patterns:
+          - pattern-regex: |-
+              (?:window\.|globalThis\.|self\.)?(?:localStorage|sessionStorage)\.setItem\([^)]*?(?i:token|jwt|bearer|credential|api[_-]?key)
+      # Bracket assignment with a token-named string-literal key.
+      - patterns:
+          - pattern-regex: |-
+              (?:window\.|globalThis\.|self\.)?(?:localStorage|sessionStorage)\[\s*['"][^'"]*(?i:token|jwt|bearer|credential|api[_-]?key)[^'"]*['"]\s*\]\s*=
+    metadata:
+      oauthlint-rule-id: AUTH-JWT-005
+      oauthlint-doc-url: https://oauthlint.dev/rules/jwt-localstorage
+      category: security
+      cwe: CWE-922
+      owasp: API8:2023
+      llm-prevalence: HIGH
+      references:
+        - https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html

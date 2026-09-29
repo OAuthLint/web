@@ -1,0 +1,385 @@
+---
+import SiteChrome from '../../components/SiteChrome.astro';
+import Base from '../../layouts/Base.astro';
+import { highlightCode } from '../../lib/highlight';
+import { renderInline, stripInline, titleAndBody } from '../../lib/inline';
+import { cweUrl, owaspUrl } from '../../lib/references';
+import { type RuleView, type Severity, getRules } from '../../lib/rules';
+
+export function getStaticPaths() {
+  return getRules().map((rule) => ({ params: { slug: rule.slug }, props: { rule } }));
+}
+
+interface Props {
+  rule: RuleView;
+}
+const { rule } = Astro.props;
+
+// --- Topic (category), same derivation as the catalogue --------------------
+// Every rule id is `auth.<topic>.<name>` (JS/TS) or `auth.<lang>.<topic>.<name>`
+// (every other language): the topic is always the second-to-last id segment.
+const TOPIC_LABEL: Record<string, string> = {
+  jwt: 'JWT',
+  oauth: 'OAuth',
+  oidc: 'OIDC',
+  flow: 'Flow',
+  cookie: 'Cookies',
+  crypto: 'Crypto',
+  cors: 'CORS',
+  mcp: 'MCP',
+  android: 'Android',
+  secret: 'Secrets',
+  web: 'Web',
+  tls: 'TLS',
+  session: 'Session',
+  nextauth: 'NextAuth',
+  iac: 'IaC',
+  express: 'Express',
+  fastify: 'Fastify',
+  fastapi: 'FastAPI',
+  betterauth: 'BetterAuth',
+  nestjs: 'NestJS',
+  hono: 'Hono',
+  drf: 'DRF',
+  storage: 'Storage',
+  passport: 'Passport',
+  keychain: 'Keychain',
+  flask: 'Flask',
+  django: 'Django',
+};
+function topicSlug(id: string): string {
+  const parts = id.split('.');
+  return parts.length >= 2 ? (parts[parts.length - 2] ?? 'misc') : 'misc';
+}
+const catSlug = topicSlug(rule.id);
+const catLabel = TOPIC_LABEL[catSlug] ?? catSlug.charAt(0).toUpperCase() + catSlug.slice(1);
+
+// Severity token bundle keyed by design severity. Title-case label to match
+// the masthead badge; the metadata rail renders its own ALL-CAPS mono form.
+const SEV: Record<Severity, { label: string; main: string; solid: string; border: string }> = {
+  critical: {
+    label: 'Critical',
+    main: 'var(--ol-sev-critical)',
+    solid: 'var(--ol-sev-critical-solid)',
+    border: 'var(--ol-sev-critical-border)',
+  },
+  high: {
+    label: 'High',
+    main: 'var(--ol-sev-high)',
+    solid: 'var(--ol-sev-high-solid)',
+    border: 'var(--ol-sev-high-border)',
+  },
+  medium: {
+    label: 'Medium',
+    main: 'var(--ol-sev-medium)',
+    solid: 'var(--ol-sev-medium-solid)',
+    border: 'var(--ol-sev-medium-border)',
+  },
+  low: {
+    label: 'Low',
+    main: 'var(--ol-sev-low)',
+    solid: 'var(--ol-sev-low-solid)',
+    border: 'var(--ol-sev-low-border)',
+  },
+  info: {
+    label: 'Info',
+    main: 'var(--ol-sev-info)',
+    solid: 'var(--ol-sev-info-solid)',
+    border: 'var(--ol-sev-info-border)',
+  },
+};
+const sev = SEV[rule.severity];
+
+// AI (LLM) prevalence: OAuthLint's core differentiator, how often AI coding
+// tools generate this anti-pattern by default. Not part of the static design
+// mock (which has no data model), surfaced here per the brief.
+const PREV: Record<'HIGH' | 'MEDIUM' | 'LOW', { label: string; color: string }> = {
+  HIGH: { label: 'HIGH', color: 'var(--ol-sev-critical)' },
+  MEDIUM: { label: 'MEDIUM', color: 'var(--ol-sev-high)' },
+  LOW: { label: 'LOW', color: 'var(--ol-text-muted)' },
+};
+const prev = PREV[rule.llmPrevalence];
+
+// Full language names for the masthead's plain-text language list (the
+// catalogue's short "js / ts" form is for a dense table; here there's room).
+const FULL_LANG_LABEL: Record<string, string> = {
+  js: 'JavaScript',
+  ts: 'TypeScript',
+  python: 'Python',
+  go: 'Go',
+  java: 'Java',
+  rust: 'Rust',
+  csharp: 'C#',
+  php: 'PHP',
+  ruby: 'Ruby',
+  kotlin: 'Kotlin',
+  swift: 'Swift',
+  android: 'Android',
+  xml: 'XML',
+  json: 'JSON',
+  terraform: 'Terraform',
+  yaml: 'YAML',
+};
+const langBadge = rule.languages.map((l) => FULL_LANG_LABEL[l] ?? l).join(', ');
+
+// The message is flowing literal-block prose. The title (masthead) is its
+// first sentence; the body ("what it catches") is the rest, reconstructed
+// into paragraphs/lists. Both keep their `code` spans for inline rendering.
+const { body: bodyBlocks } = titleAndBody(rule.message);
+const titleHtml = renderInline(rule.title);
+
+// Disable directive comment uses language-appropriate comment syntax.
+// Python and Ruby use `#`; everything else we ship (JS/TS, Go, Java, Rust,
+// C#, PHP, Kotlin) uses `//`.
+const isHashComment = rule.languages.some((l) => l === 'python' || l === 'ruby');
+const commentPrefix = isHashComment ? '#' : '//';
+
+const codeFont =
+  'font-family:var(--ol-font-mono); font-size:var(--ol-text-code); line-height:1.9; white-space:pre; overflow-x:auto; margin:0;';
+
+// Build-time syntax highlighting (Shiki dual-theme). Each rule is
+// single-language, so we highlight each fixture in its own language and
+// inject the result with `set:html`; theme selection is handled by CSS below.
+const vulnerableHtml = rule.vulnerable
+  ? await highlightCode(rule.vulnerable.code, rule.vulnerable.language)
+  : undefined;
+const safeHtml = rule.safe ? await highlightCode(rule.safe.code, rule.safe.language) : undefined;
+
+// Canonical external pages for the CWE / OWASP identifiers (used in both the
+// title badges and the metadata rail).
+const cweHref = rule.cwe ? cweUrl(rule.cwe) : undefined;
+const owaspHref = rule.owasp ? owaspUrl(rule.owasp) : undefined;
+
+// Per-page structured data: each rule is a focused how-to on an auth
+// anti-pattern, so a TechArticle node describes it (appended to the site-wide
+// graph in Base). Keeps the rule's CWE/OWASP mapping machine-readable.
+const ruleUrl = `https://oauthlint.dev/rules/${rule.slug}`;
+const ruleTitleText = stripInline(rule.title);
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: `${rule.id}: ${ruleTitleText}`,
+  description: `${rule.id} (${rule.cwe ?? 'auth'}): ${ruleTitleText} Vulnerable and safe examples, how to suppress, and references.`,
+  url: ruleUrl,
+  mainEntityOfPage: ruleUrl,
+  image: 'https://oauthlint.dev/og.png',
+  author: { '@type': 'Organization', name: 'Auspeo', url: 'https://oauthlint.dev/' },
+  publisher: { '@id': 'https://oauthlint.dev/#org' },
+  keywords: [
+    rule.id,
+    rule.cwe,
+    rule.owasp ? `OWASP ${rule.owasp}` : undefined,
+    catLabel,
+    ...rule.languages,
+    'OAuth security linter',
+    'AI auth bugs',
+  ]
+    .filter(Boolean)
+    .join(', '),
+};
+---
+<Base
+  title={`${rule.id} · OAuthLint`}
+  description={`${rule.id} (${rule.cwe ?? 'auth'}): ${stripInline(rule.title)} Vulnerable and safe examples, how to suppress, and references.`}
+  ogType="article"
+  jsonLd={articleJsonLd}
+>
+  <SiteChrome active="rules">
+    <div class="rule-detail-grid" style="max-width:1120px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:var(--ol-space-10); padding:var(--ol-space-10) var(--ol-space-6) var(--ol-space-20);">
+      <main style="min-width:0;">
+        <nav aria-label="Breadcrumb" style="margin-bottom:var(--ol-space-5);">
+          <ol style="list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; font-family:var(--ol-font-ui); font-size:13px; color:var(--ol-text-muted);">
+            <li><a href="/rules" style="color:var(--ol-accent); text-decoration:none;">Rules</a></li>
+            <li aria-hidden="true">/</li>
+            <li><a href="/rules" style="color:var(--ol-accent); text-decoration:none;">{catLabel}</a></li>
+            <li aria-hidden="true">/</li>
+            <li><span aria-current="page" style="color:var(--ol-text);">{ruleTitleText}</span></li>
+          </ol>
+        </nav>
+
+        <header style="margin-bottom:var(--ol-space-8);">
+          <h1 style="font-family:var(--ol-font-display); font-weight:700; font-size:var(--ol-text-display-m); letter-spacing:-0.02em; line-height:1.15; margin:0 0 var(--ol-space-4);" set:html={titleHtml} />
+          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px;">
+            <span style={`display:inline-flex; align-items:center; height:26px; padding:0 10px; background:${sev.solid}; font-family:var(--ol-font-ui); font-size:13px; font-weight:600; color:var(--ol-neutral-50);`}>{sev.label}</span>
+            <code style="display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid var(--ol-border-strong); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{rule.slug}</code>
+            {rule.cwe && (cweHref
+              ? <a href={cweHref} rel="noopener noreferrer" target="_blank" class="ol-ref-badge" style="display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid var(--ol-border-strong); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary); text-decoration:none;">{rule.cwe}</a>
+              : <code style="display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid var(--ol-border-strong); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{rule.cwe}</code>)}
+            {rule.owasp && (owaspHref
+              ? <a href={owaspHref} rel="noopener noreferrer" target="_blank" class="ol-ref-badge" style="display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid var(--ol-border-strong); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary); text-decoration:none;">OWASP {rule.owasp}</a>
+              : <code style="display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid var(--ol-border-strong); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">OWASP {rule.owasp}</code>)}
+            <span title="How often AI coding tools generate this anti-pattern by default" style={`display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid ${prev.color}; border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${prev.color};`}>AI: {prev.label}</span>
+            <span style="font-family:var(--ol-font-ui); font-size:13px; color:var(--ol-text-muted); margin-left:4px;">{langBadge}</span>
+          </div>
+        </header>
+
+        <h2 style="font-family:var(--ol-font-ui); font-weight:600; font-size:var(--ol-text-heading-l); margin:0 0 var(--ol-space-3);">What it catches</h2>
+        {bodyBlocks.map((b) =>
+          b.type === 'ul' ? (
+            <ul class="rule-prose-list">
+              {b.items.map((it) => (
+                <li set:html={renderInline(it)} />
+              ))}
+            </ul>
+          ) : (
+            <p
+              style="font-size:var(--ol-text-body-m); line-height:1.75; color:var(--ol-text-secondary); margin:0 0 var(--ol-space-5);"
+              set:html={renderInline(b.text)}
+            />
+          ),
+        )}
+
+        {rule.vulnerable && (
+          <>
+            <div style="display:flex; align-items:center; gap:8px; margin:var(--ol-space-6) 0 var(--ol-space-3);">
+              <h3 style={`margin:0; font-family:var(--ol-font-ui); font-size:14px; font-weight:600; color:${sev.main};`}>Vulnerable</h3>
+            </div>
+            <div style={`background:var(--ol-code-bg); border:1px solid ${sev.border}; overflow:hidden; margin-bottom:var(--ol-space-6);`}>
+              <div style="padding:8px 14px; background:var(--ol-surface); border-bottom:1px solid var(--ol-border); font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-muted);">{rule.vulnerable.filename}</div>
+              <div class="ol-codeblock" set:html={vulnerableHtml}></div>
+            </div>
+          </>
+        )}
+
+        {rule.safe && (
+          <>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:var(--ol-space-3);">
+              <h3 style="margin:0; font-family:var(--ol-font-ui); font-size:14px; font-weight:600; color:var(--ol-sev-pass);">Safe</h3>
+            </div>
+            <div style="background:var(--ol-code-bg); border:1px solid var(--ol-sev-pass-border); overflow:hidden; margin-bottom:var(--ol-space-10);">
+              <div style="padding:8px 14px; background:var(--ol-surface); border-bottom:1px solid var(--ol-border); font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-muted);">{rule.safe.filename}</div>
+              <div class="ol-codeblock" set:html={safeHtml}></div>
+            </div>
+          </>
+        )}
+
+        <h2 style="font-family:var(--ol-font-ui); font-weight:600; font-size:var(--ol-text-heading-l); margin:0 0 var(--ol-space-3);">Suppressing this rule</h2>
+        <p style="font-size:var(--ol-text-body-m); line-height:1.75; color:var(--ol-text-secondary); margin:0 0 var(--ol-space-4);">If a finding is a genuine false positive, scope the suppression to the exact line and leave a reason — never disable the rule project-wide.</p>
+        <pre style={`background:var(--ol-code-bg); border:1px solid var(--ol-border); padding:var(--ol-space-4) var(--ol-space-5); color:var(--ol-text-faint); ${codeFont} margin-bottom:var(--ol-space-10);`}><code>{commentPrefix} oauthlint-disable-next-line {rule.id} -- &lt;reason&gt;</code></pre>
+
+        {rule.references.length > 0 && (
+          <>
+            <h2 style="font-family:var(--ol-font-ui); font-weight:600; font-size:var(--ol-text-heading-l); margin:0 0 var(--ol-space-4);">References</h2>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              {rule.references.map((ref) => (
+                <a href={ref} rel="noopener noreferrer" target="_blank" style="font-family:var(--ol-font-mono); font-size:13px; color:var(--ol-accent); text-decoration:none; word-break:break-all;">{ref} ↗</a>
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+
+      <aside class="rule-detail-rail" style="position:sticky; top:80px; align-self:start; height:fit-content; display:flex; flex-direction:column; gap:var(--ol-space-4);">
+        <div style="border:1px solid var(--ol-border); border-radius:3px; overflow:hidden;">
+          <div style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-faint); padding:12px 16px; border-bottom:1px solid var(--ol-border);">METADATA</div>
+          <div style="padding:var(--ol-space-4); display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">Severity</span><span style={`font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${sev.main};`}>● {sev.label.toUpperCase()}</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">OAuthLint id</span><span style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{rule.ruleId}</span></div>
+            {rule.cwe && <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">CWE</span>{cweHref
+              ? <a href={cweHref} rel="noopener noreferrer" target="_blank" class="ol-ref-link" style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary); text-decoration:none;">{rule.cwe}</a>
+              : <span style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{rule.cwe}</span>}</div>}
+            {rule.owasp && <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">OWASP</span>{owaspHref
+              ? <a href={owaspHref} rel="noopener noreferrer" target="_blank" class="ol-ref-link" style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary); text-decoration:none;">{rule.owasp}</a>
+              : <span style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{rule.owasp}</span>}</div>}
+            <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">Category</span><span style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{catLabel}</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">AI prevalence</span><span style={`font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${prev.color};`}>● {prev.label}</span></div>
+          </div>
+        </div>
+        <a href="/rules" style="display:inline-flex; align-items:center; gap:8px; font-family:var(--ol-font-mono); font-weight:500; font-size:12px; color:var(--ol-text-secondary); background:var(--ol-surface); border:1px solid var(--ol-border-strong); height:38px; padding:0 16px; text-decoration:none; justify-content:center; border-radius:3px;">← all rules</a>
+      </aside>
+    </div>
+  </SiteChrome>
+</Base>
+
+<style is:global>
+  /* Shiki dual-theme highlighting for rule code panels. `defaultColor:false`
+     emits `--shiki-light` / `--shiki-dark` (token + background) inline; we pick
+     the set that matches the active `data-theme`, so colours flip with the
+     site theme toggle. Background is left to the panel surface (`--ol-code-bg`)
+     so the existing code-panel chrome shows through. */
+  .ol-codeblock .shiki,
+  .ol-codeblock .shiki span {
+    color: var(--shiki-dark);
+    background-color: transparent;
+    font-style: var(--shiki-dark-font-style);
+    font-weight: var(--shiki-dark-font-weight);
+    text-decoration: var(--shiki-dark-text-decoration);
+  }
+  html[data-theme='light'] .ol-codeblock .shiki,
+  html[data-theme='light'] .ol-codeblock .shiki span {
+    color: var(--shiki-light);
+    font-style: var(--shiki-light-font-style);
+    font-weight: var(--shiki-light-font-weight);
+    text-decoration: var(--shiki-light-text-decoration);
+  }
+
+  /* Match the design's code chrome: padding, mono font, scroll. */
+  .ol-codeblock .shiki {
+    margin: 0;
+    padding: var(--ol-space-4) var(--ol-space-5);
+    font-family: var(--ol-font-mono);
+    font-size: var(--ol-text-code);
+    line-height: 1.9;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* CWE / OWASP reference chips keep the badge/row look; accent on hover. */
+  .ol-ref-badge:hover,
+  .ol-ref-link:hover {
+    color: var(--ol-accent);
+    border-color: var(--ol-accent);
+  }
+
+  /* Inline `code` spans in the rule prose (masthead title and "What it
+     catches"), emitted by renderInline(). Mono chip, matching the design's
+     inline-code treatment, so backticks read as code instead of leaking as
+     literal characters. */
+  .rule-detail-grid main h1 code,
+  .rule-detail-grid main p code,
+  .rule-detail-grid main li code {
+    font-family: var(--ol-font-mono);
+    font-size: 0.875em;
+    background: var(--ol-surface-raised);
+    border: 1px solid var(--ol-border-subtle);
+    border-radius: var(--ol-radius-xs);
+    padding: 1px 5px;
+    color: var(--ol-text);
+  }
+
+  /* `*italic*` emphasis from the message prose. */
+  .rule-detail-grid main em {
+    font-style: italic;
+  }
+
+  /* Dash-bullet lists reconstructed from the message into a real <ul>. */
+  .rule-detail-grid main .rule-prose-list {
+    margin: 0 0 var(--ol-space-5);
+    padding-left: var(--ol-space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ol-space-2);
+  }
+  .rule-detail-grid main .rule-prose-list li {
+    font-size: var(--ol-text-body-m);
+    line-height: 1.7;
+    color: var(--ol-text-secondary);
+  }
+
+  /* Tablet + mobile: the content/metadata 2-col layout stacks to one column,
+     with the metadata rail moved above the content (order:-1), matching the
+     design's mobile layout. The rail loses its sticky offset so it reads as
+     a normal leading block. Code panels already scroll horizontally
+     (.ol-codeblock .shiki + the suppress <pre> set overflow-x:auto). */
+  @media (max-width: 860px) {
+    .rule-detail-grid {
+      grid-template-columns: 1fr !important;
+      gap: var(--ol-space-8) !important;
+    }
+    .rule-detail-rail {
+      position: static !important;
+      top: auto !important;
+      order: -1;
+    }
+  }
+</style>

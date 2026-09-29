@@ -1,0 +1,207 @@
+rules:
+  - id: auth.flow.timing-unsafe-compare
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    # Non-production code (example apps, demos, docs, vendored copies, tests)
+    # is not the library surface users ship, so findings there are noise for a
+    # low-FP linter. Globs intentionally omit `**/tests/**` / `**/fixtures/**`
+    # so the rule still fires on its own fixtures under rules/tests/fixtures/.
+    paths:
+      exclude:
+        - "**/test/**"
+        - "**/__tests__/**"
+        - "**/*.test.*"
+        - "**/*.spec.*"
+        - "**/example/**"
+        - "**/examples/**"
+        - "**/demo/**"
+        - "**/sample/**"
+        - "**/samples/**"
+        - "**/benchmark/**"
+        - "**/benchmarks/**"
+        - "**/bench/**"
+        - "**/integration/**"
+        - "**/docs/**"
+        - "**/__mocks__/**"
+        - "**/mocks/**"
+        - "**/vendored/**"
+        - "**/node_modules/**"
+        - "**/*.stories.*"
+    message: |
+      A secret-shaped value (`password`, `token`, `secret`, `apiKey`,
+      `csrf`, `hmac`) is being compared with `===` / `!==` /
+      `string1 == string2`. JavaScript's equality operators short-circuit
+      on the first differing byte, which leaks the matching prefix
+      length over the wire, a classic timing-attack vector.
+
+      Use `crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))` (both
+      buffers must be the same length, so hash first if needed). For
+      password verification, use `argon2.verify`, `bcrypt.compare`, or
+      `scrypt`. They handle constant-time comparison for you.
+    # We want to catch `secretVar === userInput` but NOT the dozens of
+    # legitimate non-secret comparisons that just happen to involve a
+    # variable whose name ends with one of our secret-looking suffixes:
+    #   typeof token === 'string'          (type check)
+    #   signature !== ''                   (presence check)
+    #   parts.length === 3                 (shape check)
+    #   token.length === expectedLength    (length check)
+    # The pattern-not clauses below carve those out. They were the
+    # entirety of the FP class we saw on jose / next-auth in validation.
+    pattern-either:
+      - patterns:
+          - pattern-either:
+              - pattern: '$A === $B'
+              - pattern: '$A !== $B'
+              - pattern: '$A == $B'
+              - pattern: '$A != $B'
+          - metavariable-regex:
+              metavariable: $A
+              regex: (?i)^.*(?:password|secret|token|apikey|api_key|csrf|hmac|signature)$
+          # The name-based regex above also matches operands that merely END in a
+          # secret-looking word but are provably NOT secrets: a class-name lookup
+          # (`Foo.name`) or an enum/error-code member (`TokenError.codes.invalidSignature`,
+          # which ends in "signature"). Exclude those shapes on the secret side so
+          # the rule keeps firing on real token/HMAC/CSRF compares only.
+          - metavariable-pattern:
+              metavariable: $A
+              patterns:
+                - pattern-not: '$X.name'
+                - pattern-not: '$X.codes.$Y'
+          # The OTHER operand ($B) being a class name (`token === Config.name`), a
+          # bare `name` identifier (a DI token vs a provider NAME, not a secret), or
+          # an enum member means there is no secret on that side to leak byte-by-byte.
+          - metavariable-pattern:
+              metavariable: $B
+              patterns:
+                - pattern-not: 'name'
+                - pattern-not: '$X.name'
+                - pattern-not: '$X.codes.$Y'
+          - pattern-not: 'typeof $X === $Y'
+          - pattern-not: 'typeof $X !== $Y'
+          - pattern-not: 'typeof $X == $Y'
+          - pattern-not: 'typeof $X != $Y'
+          # A secret-named value compared to a *literal* is never the
+          # timing target: a literal baked into source is already public,
+          # so there is no secret to leak byte-by-byte. This covers demo
+          # passwords (`pw !== "password"`), feature flags
+          # (`idToken === false`) and status checks, the dominant FP
+          # class on next-auth in real-world validation. `"..."` matches
+          # any string literal (including the empty string).
+          - pattern-not: '$X === "..."'
+          - pattern-not: '$X !== "..."'
+          - pattern-not: '$X == "..."'
+          - pattern-not: '$X != "..."'
+          - pattern-not: '"..." === $X'
+          - pattern-not: '"..." !== $X'
+          - pattern-not: '"..." == $X'
+          - pattern-not: '"..." != $X'
+          - pattern-not: '$X === true'
+          - pattern-not: '$X !== true'
+          - pattern-not: '$X == true'
+          - pattern-not: '$X != true'
+          - pattern-not: '$X === false'
+          - pattern-not: '$X !== false'
+          - pattern-not: '$X == false'
+          - pattern-not: '$X != false'
+          - pattern-not: 'true === $X'
+          - pattern-not: 'true !== $X'
+          - pattern-not: 'true == $X'
+          - pattern-not: 'true != $X'
+          - pattern-not: 'false === $X'
+          - pattern-not: 'false !== $X'
+          - pattern-not: 'false == $X'
+          - pattern-not: 'false != $X'
+          - pattern-not: '$X.length === $N'
+          - pattern-not: '$X.length !== $N'
+          - pattern-not: '$X.length == $N'
+          - pattern-not: '$X.length != $N'
+          - pattern-not: '$X === null'
+          - pattern-not: '$X !== null'
+          - pattern-not: '$X == null'
+          - pattern-not: '$X != null'
+          - pattern-not: '$X === undefined'
+          - pattern-not: '$X !== undefined'
+          - pattern-not: '$X == undefined'
+          - pattern-not: '$X != undefined'
+      - patterns:
+          - pattern-either:
+              - pattern: '$A === $B'
+              - pattern: '$A !== $B'
+              - pattern: '$A == $B'
+              - pattern: '$A != $B'
+          - metavariable-regex:
+              metavariable: $B
+              regex: (?i)^.*(?:password|secret|token|apikey|api_key|csrf|hmac|signature)$
+          # Same carve-out as the $A arm, mirrored: exclude a class-name lookup or
+          # enum/error-code member on the secret side, and a class name / bare
+          # `name` / enum member on the other side.
+          - metavariable-pattern:
+              metavariable: $B
+              patterns:
+                - pattern-not: '$X.name'
+                - pattern-not: '$X.codes.$Y'
+          - metavariable-pattern:
+              metavariable: $A
+              patterns:
+                - pattern-not: 'name'
+                - pattern-not: '$X.name'
+                - pattern-not: '$X.codes.$Y'
+          - pattern-not: 'typeof $X === $Y'
+          - pattern-not: 'typeof $X !== $Y'
+          - pattern-not: 'typeof $X == $Y'
+          - pattern-not: 'typeof $X != $Y'
+          # A secret-named value compared to a *literal* is never the
+          # timing target: a literal baked into source is already public,
+          # so there is no secret to leak byte-by-byte. This covers demo
+          # passwords (`pw !== "password"`), feature flags
+          # (`idToken === false`) and status checks, the dominant FP
+          # class on next-auth in real-world validation. `"..."` matches
+          # any string literal (including the empty string).
+          - pattern-not: '$X === "..."'
+          - pattern-not: '$X !== "..."'
+          - pattern-not: '$X == "..."'
+          - pattern-not: '$X != "..."'
+          - pattern-not: '"..." === $X'
+          - pattern-not: '"..." !== $X'
+          - pattern-not: '"..." == $X'
+          - pattern-not: '"..." != $X'
+          - pattern-not: '$X === true'
+          - pattern-not: '$X !== true'
+          - pattern-not: '$X == true'
+          - pattern-not: '$X != true'
+          - pattern-not: '$X === false'
+          - pattern-not: '$X !== false'
+          - pattern-not: '$X == false'
+          - pattern-not: '$X != false'
+          - pattern-not: 'true === $X'
+          - pattern-not: 'true !== $X'
+          - pattern-not: 'true == $X'
+          - pattern-not: 'true != $X'
+          - pattern-not: 'false === $X'
+          - pattern-not: 'false !== $X'
+          - pattern-not: 'false == $X'
+          - pattern-not: 'false != $X'
+          - pattern-not: '$X.length === $N'
+          - pattern-not: '$X.length !== $N'
+          - pattern-not: '$X.length == $N'
+          - pattern-not: '$X.length != $N'
+          - pattern-not: '$X === null'
+          - pattern-not: '$X !== null'
+          - pattern-not: '$X == null'
+          - pattern-not: '$X != null'
+          - pattern-not: '$X === undefined'
+          - pattern-not: '$X !== undefined'
+          - pattern-not: '$X == undefined'
+          - pattern-not: '$X != undefined'
+    metadata:
+      oauthlint-rule-id: AUTH-FLOW-004
+      oauthlint-doc-url: https://oauthlint.dev/rules/flow-timing-unsafe-compare
+      category: security
+      cwe: CWE-208
+      owasp: API2:2023
+      llm-prevalence: MEDIUM
+      references:
+        - https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
+        - https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b

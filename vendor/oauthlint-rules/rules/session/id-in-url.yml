@@ -1,0 +1,54 @@
+rules:
+  - id: auth.session.id-in-url
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    # Non-production code (example apps, demos, sample projects, benchmarks,
+    # integration harnesses, docs, vendored copies, tests) is not the library
+    # surface users ship, so findings there are noise for a low-FP linter.
+    paths:
+      exclude:
+        - "**/test/**"
+        - "**/__tests__/**"
+        - "**/*.test.*"
+        - "**/*.spec.*"
+        - "**/example/**"
+        - "**/examples/**"
+        - "**/demo/**"
+        - "**/sample/**"
+        - "**/samples/**"
+        - "**/benchmark/**"
+        - "**/benchmarks/**"
+        - "**/bench/**"
+        - "**/integration/**"
+        - "**/docs/**"
+        - "**/__mocks__/**"
+        - "**/mocks/**"
+        - "**/vendored/**"
+        - "**/node_modules/**"
+        - "**/*.stories.*"
+    message: |
+      A session token / id appears in a URL query string. URLs are
+      logged everywhere (web server logs, reverse proxies, browser
+      history, referrer headers leaking to third-party CDNs and ad
+      networks), so this leaks the credential.
+
+      Pass session ids/tokens in the `Authorization` header or in a
+      `Secure; HttpOnly` cookie. Never in the URL.
+
+      OWASP ASVS V3.2 explicitly bans this pattern.
+    pattern-either:
+      - pattern-regex: |-
+              [?&](?:session|sid|sess|auth_token|access_token|refresh_token|token|api[_-]?key|jwt|bearer)=
+      - pattern-regex: |-
+              \?\s*['"]?(?:session|sid|sess|auth_token|access_token|refresh_token|token|api[_-]?key|jwt|bearer)['"]?\s*:
+    metadata:
+      oauthlint-rule-id: AUTH-SESSION-001
+      oauthlint-doc-url: https://oauthlint.dev/rules/session-id-in-url
+      category: security
+      cwe: CWE-598
+      owasp: API1:2023
+      llm-prevalence: MEDIUM
+      references:
+        - https://owasp.org/www-project-application-security-verification-standard/

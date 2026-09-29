@@ -1,0 +1,42 @@
+rules:
+  - id: auth.oauth.no-state
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: |
+      OAuth 2.0 authorization request is being built WITHOUT a `state`
+      parameter. This opens you to CSRF attacks during the OAuth dance.
+      An attacker can trick the victim into logging in as the attacker.
+
+      Always generate a cryptographically random `state`, store it in a
+      session/cookie, and validate it on the callback. PKCE alone is not a
+      substitute for `state` when handling browser sessions.
+    pattern-either:
+      # Inline authorize URL carrying both client_id and response_type but no
+      # state, evaluated per quoted URL literal (the lookaheads/lookbehind are
+      # bounded to the contents of one string by `[^'"]`). This avoids the
+      # file-level false negative where a `state=` elsewhere in the file (a
+      # comment, a different correct call) would suppress a genuinely
+      # state-less URL. The path is not hardcoded (Google uses
+      # /o/oauth2/v2/auth, etc.). Single/double quotes only. A dynamic
+      # template-literal URL (backticks) is excluded.
+      - pattern-regex: |-
+          ['"]https?://(?=[^'"]*[?&]client_id=)(?=[^'"]*[?&]response_type=)(?![^'"]*[?&]state=)[^'"]+['"]
+      # Programmatic URLSearchParams build (AST object match, robust to key
+      # order and length). Fires when client_id + response_type are present but
+      # state is not (covers both `state: x` and the `state` shorthand).
+      - patterns:
+          - pattern: 'new URLSearchParams({..., client_id: $C, ...})'
+          - pattern: 'new URLSearchParams({..., response_type: $R, ...})'
+          - pattern-not: 'new URLSearchParams({..., state: $S, ...})'
+          - pattern-not: 'new URLSearchParams({..., state, ...})'
+    metadata:
+      oauthlint-rule-id: AUTH-OAUTH-001
+      oauthlint-doc-url: https://oauthlint.dev/rules/oauth-no-state
+      category: security
+      cwe: CWE-352
+      owasp: API1:2023
+      llm-prevalence: HIGH
+      references:
+        - https://datatracker.ietf.org/doc/html/rfc6749#section-10.12

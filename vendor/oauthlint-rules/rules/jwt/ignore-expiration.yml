@@ -1,0 +1,53 @@
+rules:
+  - id: auth.jwt.ignore-expiration
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: |
+      `ignoreExpiration: true` in a `jsonwebtoken` `verify()` call disables the
+      `exp` claim check. An expired token is then accepted as valid forever, so
+      a stolen or long-old token never stops working, defeating the whole point
+      of short-lived access tokens.
+
+      Remove `ignoreExpiration: true` so the `exp` claim is enforced, and set a
+      sane `expiresIn` when signing (`jwt.sign(payload, key, { expiresIn: '15m'
+      })`). See CWE-613 (Insufficient Session Expiration).
+    # Scoped to the `jsonwebtoken` library via the common alias `jwt`, mirroring
+    # decode-without-verify.yml. We only flag `verify(...)` calls that explicitly
+    # pass `ignoreExpiration: true`; `verify(...)` without that option, and
+    # `ignoreExpiration: false`, are never matched. We also support the
+    # destructured import `import { verify } from 'jsonwebtoken'`, scoped to that
+    # import so an unrelated `verify()` is safe. The verify call is matched with
+    # `pattern-inside` (any options object), and the matched node is narrowed to
+    # the `ignoreExpiration: true` property itself. This keeps detection
+    # identical (the flag is still caught regardless of which other options
+    # appear alongside it) while letting the autofix below rewrite just that
+    # property and leave every sibling option untouched.
+    patterns:
+      - pattern-either:
+          - pattern-inside: 'jwt.verify($T, $K, {...})'
+          - patterns:
+              - pattern-inside: |
+                  import { ..., verify, ... } from 'jsonwebtoken'
+                  ...
+              - pattern-inside: 'verify($T, $K, {...})'
+      - pattern: 'ignoreExpiration: true'
+    # Safe, deterministic autofix: flip the disabled check back on. `false` is the
+    # secure value: it is the library default (expiry enforced) and the exact
+    # value the rule treats as compliant, so the rewrite fully resolves the
+    # finding. The match is narrowed to the property, so `ignoreExpiration: true`
+    # becomes `ignoreExpiration: false` with the rest of the options object intact.
+    fix: 'ignoreExpiration: false'
+    metadata:
+      oauthlint-rule-id: AUTH-JWT-011
+      oauthlint-doc-url: https://oauthlint.dev/rules/jwt-ignore-expiration
+      category: security
+      cwe: CWE-613
+      owasp: API2:2023
+      llm-prevalence: HIGH
+      technology:
+        - jsonwebtoken
+      references:
+        - https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
+        - https://cwe.mitre.org/data/definitions/613.html

@@ -1,0 +1,165 @@
+---
+/**
+ * Shared site chrome (sticky nav + 4-column footer + the graphite grid
+ * backdrop) for the data-driven pages (rule catalogue, per-rule, OWASP,
+ * validation). Matches the finalized Tracer design nav/footer exactly, so
+ * these pages are indistinguishable from the ported static marketing pages.
+ * The theme toggle + mobile nav hooks ([data-theme-toggle]/[data-theme-icon]/
+ * [data-nav-toggle]/[data-navlinks]) are wired globally in Base.astro.
+ */
+interface Props {
+  /** Which primary nav link is the current page (renders in the accent colour). */
+  active?: 'docs' | 'rules' | 'pricing' | 'security';
+}
+const { active } = Astro.props;
+const GH = 'https://github.com/OAuthLint/oauthlint';
+const LINKS = [
+  { key: 'docs', label: 'Docs', href: '/docs' },
+  { key: 'rules', label: 'Rules', href: '/rules' },
+  { key: 'pricing', label: 'Pricing', href: '/pricing' },
+  { key: 'security', label: 'Security', href: '/security' },
+] as const;
+const FOOTER = [
+  { title: 'Product', links: [['Docs', '/docs'], ['Rules', '/rules'], ['Pricing', '/pricing'], ['Changelog', '/changelog']] },
+  { title: 'Trust', links: [['Security', '/security'], ['Research', '/research'], ['Status', '/status']] },
+  { title: 'Project', links: [['About', '/about'], ['GitHub', GH]] },
+  { title: 'Legal', links: [['Terms', '/terms'], ['Privacy', '/privacy'], ['DPA', '/dpa']] },
+];
+const logo = `<svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="13" y="11" width="38" height="27" stroke="var(--ol-accent)" stroke-width="5"/><path d="M11 50c3-5 6-5 9 0s6 5 9 0 6-5 9 0 6 5 9 0" stroke="var(--ol-sev-critical)" stroke-width="5" stroke-linecap="round"/></svg>`;
+---
+<div class="ol-chrome">
+  <nav class="ol-nav">
+    <a class="ol-brand" href="/" aria-label="OAuthLint home">
+      <Fragment set:html={logo} />
+      <span class="ol-wordmark">OAuthLint</span>
+    </a>
+    <div style="flex:1;"></div>
+    <div id="site-nav-links" class="ol-navlinks" data-navlinks>
+      {LINKS.map((l) => (
+        <a href={l.href} class:list={['ol-navlink', { active: active === l.key }]} aria-current={active === l.key ? 'page' : undefined}>{l.label}</a>
+      ))}
+    </div>
+    <div class="ol-nav-actions">
+      <button type="button" data-theme-toggle class="ol-iconbtn" aria-label="Toggle light or dark theme" title="Toggle theme">
+        <span data-theme-icon aria-hidden="true"></span>
+      </button>
+      <a class="ol-ghbtn" href={GH} target="_blank" rel="noopener noreferrer" aria-label="OAuthLint on GitHub" title="GitHub">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.85 9.73.5.1.68-.22.68-.49v-1.7c-2.79.62-3.38-1.22-3.38-1.22-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.94.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05A9.4 9.4 0 0112 6.84c.85 0 1.71.12 2.51.34 1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.26 10.26 0 0022 12.25C22 6.58 17.52 2 12 2z"/></svg>
+      </a>
+      <a class="ol-signin" href="https://app.oauthlint.dev/login">Sign in</a>
+      <a class="ol-cta" href="https://app.oauthlint.dev/signup">Start free</a>
+      <button type="button" data-nav-toggle class="ol-hamburger" aria-label="Open navigation menu" aria-expanded="false" aria-controls="site-nav-links">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <slot />
+
+  <footer class="ol-footer">
+    <div class="ol-footer-grid">
+      <div>
+        <a class="ol-brand" href="/" aria-label="OAuthLint home">
+          <Fragment set:html={logo} />
+          <span class="ol-wordmark" style="font-size:16px;">OAuthLint</span>
+        </a>
+        <p class="ol-footer-tag">Secure the code your AI writes. Open source, end to end.</p>
+      </div>
+      {FOOTER.map((col) => (
+        <div>
+          <h2 class="ol-footer-h">{col.title}</h2>
+          <ul class="ol-footer-list">
+            {col.links.map(([label, href]) => (
+              <li><a href={href} {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{label}</a></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </footer>
+</div>
+
+<style>
+  .ol-chrome {
+    min-height: 100vh;
+    background-color: var(--ol-page);
+    background-image:
+      linear-gradient(to right, var(--ol-grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--ol-grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .ol-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: var(--ol-space-6);
+    padding: 0 var(--ol-space-6);
+    height: 56px;
+    background: color-mix(in oklch, var(--ol-page) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--ol-border);
+  }
+  .ol-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ol-text); }
+  .ol-wordmark { font-family: var(--ol-font-display); font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+  .ol-navlinks { display: flex; align-items: center; gap: var(--ol-space-6); }
+  .ol-navlink {
+    font-family: var(--ol-font-ui);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ol-text-secondary);
+    text-decoration: none;
+    transition: color var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .ol-navlink:hover { color: var(--ol-text); }
+  .ol-navlink.active { color: var(--ol-accent); }
+  .ol-nav-actions { display: flex; align-items: center; gap: 6px; }
+  .ol-iconbtn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 3px;
+    background: var(--ol-surface); border: 1px solid var(--ol-border-strong);
+    color: var(--ol-text-secondary); cursor: pointer;
+    transition: border-color var(--ol-dur-fast) var(--ol-ease-standard), color var(--ol-dur-fast) var(--ol-ease-standard);
+  }
+  .ol-iconbtn:hover { border-color: var(--ol-accent-border); color: var(--ol-text); }
+  .ol-iconbtn svg { display: block; }
+  .ol-ghbtn { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 3px; color: var(--ol-text-secondary); text-decoration: none; transition: color var(--ol-dur-fast) var(--ol-ease-standard), background-color var(--ol-dur-fast) var(--ol-ease-standard); }
+  .ol-ghbtn:hover { color: var(--ol-text); background: var(--ol-overlay); }
+  .ol-signin { display: inline-flex; align-items: center; height: 34px; padding: 0 12px; font-family: var(--ol-font-ui); font-size: 14px; font-weight: 500; color: var(--ol-text-secondary); text-decoration: none; transition: color var(--ol-dur-fast) var(--ol-ease-standard); }
+  .ol-signin:hover { color: var(--ol-text); }
+  .ol-cta { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 3px; background: var(--ol-accent); color: var(--ol-accent-fg); font-family: var(--ol-font-ui); font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color var(--ol-dur-fast) var(--ol-ease-standard); }
+  .ol-cta:hover { background: var(--ol-accent-hover); }
+  .ol-hamburger { display: none; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; background: none; border: 0; color: var(--ol-text-secondary); cursor: pointer; }
+
+  .ol-footer { border-top: 1px solid var(--ol-border); margin-top: var(--ol-space-16); }
+  .ol-footer-grid {
+    max-width: 1120px; margin: 0 auto;
+    padding: var(--ol-space-12) var(--ol-space-6);
+    display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr)); gap: 32px;
+  }
+  .ol-footer-tag { margin: 12px 0 0; font-family: var(--ol-font-ui); font-size: 14px; line-height: 1.6; color: var(--ol-text-muted); max-width: 34ch; }
+  .ol-footer-h { margin: 0 0 12px; font-family: var(--ol-font-ui); font-size: 13px; font-weight: 600; color: var(--ol-text); }
+  .ol-footer-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .ol-footer-list a { font-family: var(--ol-font-ui); font-size: 14px; color: var(--ol-text-secondary); text-decoration: none; transition: color var(--ol-dur-fast) var(--ol-ease-standard); }
+  .ol-footer-list a:hover { color: var(--ol-text); }
+
+  @media (max-width: 920px) {
+    .ol-hamburger { display: inline-flex; }
+    .ol-navlinks {
+      position: absolute; top: 56px; right: var(--ol-space-6);
+      flex-direction: column; align-items: flex-start; gap: var(--ol-space-4);
+      padding: var(--ol-space-4) var(--ol-space-5);
+      background: var(--ol-surface); border: 1px solid var(--ol-border); border-radius: var(--ol-radius-md);
+      box-shadow: var(--ol-elev-3);
+    }
+    .ol-navlinks:not(.open) { display: none; }
+    .ol-signin { display: none; }
+  }
+  @media (max-width: 760px) {
+    .ol-footer-grid { grid-template-columns: 1fr 1fr; gap: var(--ol-space-8); }
+  }
+  @media (max-width: 460px) {
+    .ol-footer-grid { grid-template-columns: 1fr; }
+  }
+</style>

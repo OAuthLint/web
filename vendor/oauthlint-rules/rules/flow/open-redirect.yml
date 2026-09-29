@@ -1,0 +1,108 @@
+rules:
+  - id: auth.flow.open-redirect
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: |
+      Untrusted request input flows into a redirect destination. Because the
+      target URL is attacker-controlled, this is an open redirect (CWE-601):
+      an attacker can craft a link to your trusted host that bounces the victim
+      to an arbitrary external site. That fuels phishing, and in OAuth flows it
+      can be chained to steal authorization codes or access tokens by sending
+      the victim (and their callback) to a server you do not control.
+
+      Never redirect to a raw `req.query` / `req.body` / `req.params` /
+      `req.cookies` / `req.headers` value. Validate the destination against an
+      explicit allow-list of hosts or route names, or only allow relative paths
+      you control (reject anything containing a scheme or `//`).
+    # Taint mode so indirection is caught: `const dest = req.body.url;
+    # res.redirect(dest)` flags, not just the direct `res.redirect(req.query.x)`
+    # form. Passing the value through an allow-list / validation call
+    # (isAllowedUrl, allowlist.includes, Set.has) clears the taint, so a
+    # genuinely validated redirect does not fire.
+    mode: taint
+    # `$REQ` is constrained to conventional request-object names so that
+    # unrelated receivers (`db.query`, `config.headers`, `someObj.body`) are not
+    # treated as untrusted request input.
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: $REQ.query
+              - pattern: $REQ.params
+              - pattern: $REQ.body
+              - pattern: $REQ.cookies
+              - pattern: $REQ.headers
+              - pattern: $REQ.query.$X
+              - pattern: $REQ.params.$X
+              - pattern: $REQ.body.$X
+              - pattern: $REQ.cookies.$X
+              - pattern: $REQ.headers.$X
+              - pattern: $REQ.query[$K]
+              - pattern: $REQ.params[$K]
+              - pattern: $REQ.body[$K]
+              - pattern: $REQ.cookies[$K]
+              - pattern: $REQ.headers[$K]
+          - metavariable-regex:
+              metavariable: $REQ
+              regex: ^(req|request|ctx|context|c|event|r)$
+    pattern-sanitizers:
+      # Routing the value through an allow-list / validation helper clears the
+      # taint: only the vetted result (not the raw request input) reaches the
+      # sink.
+      - pattern: isAllowedUrl(...)
+      - pattern: validateRedirect(...)
+      - pattern: sanitizeRedirect(...)
+      # An inline allow-list membership guard vets the value: a value used inside
+      # `if (allow.has(x)) { ... }` / `if (allow.includes(x)) { ... }` /
+      # `if (allow.indexOf(x) ...) { ... }` is treated as validated. The
+      # boolean-returning membership call itself does NOT sanitize its argument
+      # (that would only clear the boolean, not the value), so we clear taint by
+      # the if-guard, mirroring the Python rule's `if is_safe_url(v): ...`.
+      - patterns:
+          - pattern: $X
+          - pattern-inside: |
+              if (<... $ALLOW.has($X) ...>) { ... }
+      - patterns:
+          - pattern: $X
+          - pattern-inside: |
+              if (<... $ALLOW.includes($X) ...>) { ... }
+      - patterns:
+          - pattern: $X
+          - pattern-inside: |
+              if (<... $ALLOW.indexOf($X) ...>) { ... }
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: $RES.redirect($SINK)
+              - pattern: $RES.redirect($CODE, $SINK)
+              - pattern: $RES.location($SINK)
+              - pattern: "$RES.set('Location', $SINK)"
+              - pattern: '$RES.set("Location", $SINK)'
+              - pattern: "$RES.setHeader('Location', $SINK)"
+              - pattern: '$RES.setHeader("Location", $SINK)'
+              - pattern: "$RES.writeHead($S, {..., Location: $SINK, ...})"
+          # `$RES.redirect(...)` / `$RES.location(...)` also match a bare,
+          # receiver-less `redirect(...)` / `location(...)` call. Those are the
+          # framework navigation primitives exported by Next.js
+          # (`next/navigation`), SvelteKit and Remix. They send the user to a
+          # server-constructed application URL, not the Express `res.redirect`
+          # open-redirect sink this rule targets. Requiring an explicit receiver
+          # removes that over-match (the dominant FP class seen on next-auth)
+          # without affecting any `res.redirect` / `res.location` detection.
+          - pattern-not: redirect($SINK)
+          - pattern-not: redirect($CODE, $SINK)
+          - pattern-not: location($SINK)
+          - focus-metavariable: $SINK
+    metadata:
+      oauthlint-rule-id: AUTH-FLOW-010
+      oauthlint-doc-url: https://oauthlint.dev/rules/flow-open-redirect
+      category: security
+      cwe: CWE-601
+      owasp: A01:2021
+      llm-prevalence: HIGH
+      technology:
+        - express
+      references:
+        - https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html
+        - https://cwe.mitre.org/data/definitions/601.html
