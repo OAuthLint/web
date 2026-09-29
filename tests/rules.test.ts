@@ -15,6 +15,11 @@ const owaspSource = readFileSync(
   'utf8',
 );
 
+const detailSource = readFileSync(
+  fileURLToPath(new URL('../src/pages/rules/[slug].astro', import.meta.url)),
+  'utf8',
+);
+
 describe('getRules()', () => {
   it('loads the full rule pack', () => {
     expect(rules.length).toBeGreaterThan(80);
@@ -66,15 +71,15 @@ describe('getRules()', () => {
 });
 
 describe('rules catalogue pagination', () => {
-  it('paginates at 12 rules per page', () => {
-    expect(catalogueSource).toMatch(/PAGE_SIZE\s*=\s*12/);
+  it('paginates at 8 rules per page (matching the design)', () => {
+    expect(catalogueSource).toMatch(/PAGE_SIZE\s*=\s*8/);
   });
 
   it('renders the pager control markup', () => {
     expect(catalogueSource).toContain('id="rule-pager"');
     expect(catalogueSource).toContain('id="rule-prev"');
     expect(catalogueSource).toContain('id="rule-next"');
-    expect(catalogueSource).toContain('id="rule-page-indicator"');
+    expect(catalogueSource).toContain('id="rule-count-label"');
   });
 });
 
@@ -85,16 +90,12 @@ describe('AI (LLM) prevalence', () => {
     }
   });
 
-  it('exposes the AI prevalence filter control + per-row signal on the catalogue', () => {
-    expect(catalogueSource).toContain('id="rule-prevalence"');
-    expect(catalogueSource).toContain('data-prev={r.llmPrevalence}');
-    // The filter participates in the client-side match predicate.
-    expect(catalogueSource).toContain('row.dataset.prev === prev');
-  });
-
-  it('only offers prevalence options that are actually present in the pack', () => {
-    // presentPrevs is derived from the data, never frozen.
-    expect(catalogueSource).toContain('presentPrevs');
+  // The catalogue is deliberately clean (matching the design mockup); the
+  // AI-prevalence signal lives on the per-rule detail page instead.
+  it('surfaces AI prevalence on the detail page (masthead badge + metadata)', () => {
+    expect(detailSource).toContain('AI: {prev.label}');
+    expect(detailSource).toContain('AI prevalence');
+    expect(detailSource).toContain('rule.llmPrevalence');
   });
 });
 
@@ -114,11 +115,6 @@ describe('dataflow (taint) surfacing', () => {
     'auth.py.flow.secret-in-response',
     'auth.py.flow.ssrf',
   ];
-
-  const detailSource = readFileSync(
-    fileURLToPath(new URL('../src/pages/rules/[slug].astro', import.meta.url)),
-    'utf8',
-  );
 
   it('every derived taint id matches a real rule in the pack', () => {
     const ids = new Set(rules.map((r) => r.id));

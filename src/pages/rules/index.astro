@@ -142,7 +142,8 @@ const PAGE_SIZE = 8;
   <SiteChrome active="rules">
     <main style="max-width:1120px; margin:0 auto; padding:var(--ol-space-12) var(--ol-space-6) var(--ol-space-20);">
       <h1 style="font-family:var(--ol-font-display); font-weight:700; font-size:var(--ol-text-display-l); letter-spacing:-0.03em; margin:0 0 var(--ol-space-3);">Every rule earns its place.</h1>
-      <p style="font-size:var(--ol-text-body-l); line-height:var(--ol-leading-relaxed); color:var(--ol-text-secondary); max-width:60ch; margin:0 0 var(--ol-space-8);">Each rule maps to a CWE and ships a vulnerable and a safe example. All of them run in the CLI, in CI and on every pull request.</p>
+      <p style="font-size:var(--ol-text-body-l); line-height:var(--ol-leading-relaxed); color:var(--ol-text-secondary); max-width:60ch; margin:0 0 var(--ol-space-4);">Each rule maps to a CWE and ships a vulnerable and a safe example. All of them run in the CLI, in CI and on every pull request.</p>
+      <p style="margin:0 0 var(--ol-space-8);"><a href="/owasp" style="font-family:var(--ol-font-mono); font-size:12px; font-weight:600; letter-spacing:0.04em; color:var(--ol-accent); text-decoration:none;">OWASP coverage →</a></p>
 
       <!-- DATAFLOW EXPLAINER -->
       {taintCount > 0 && (
@@ -219,16 +220,16 @@ const PAGE_SIZE = 8;
                     class="rule-row"
                   >
                     <td style="padding:13px 16px; border-bottom:1px solid var(--ol-border-subtle);">
-                      <div style="font-size:14px; color:var(--ol-text); margin-bottom:3px;">
-                        <a href={`/rules/${r.slug}`} class="rule-row-link" set:html={renderInline(r.title)} />
+                      <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <a href={`/rules/${r.slug}`} class="rule-row-link" style="font-family:var(--ol-font-mono); font-size:13px; font-weight:600; color:var(--ol-accent);">{r.slug}</a>
+                        {isTaint(r.id) && (
+                          <span title="Dataflow rule — traces untrusted/sensitive data from source to a dangerous sink" style="display:inline-flex; align-items:center; gap:4px; font-family:var(--ol-font-mono); font-size:9px; font-weight:600; letter-spacing:0.06em; color:var(--ol-accent); border:1px solid var(--ol-accent-800); border-radius:2px; padding:1px 5px; line-height:1.4;">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h11"></path><path d="M4 7l3-3M4 7l3 3"></path><path d="M20 17H9"></path><path d="M20 17l-3-3M20 17l-3 3"></path></svg>
+                            DATAFLOW
+                          </span>
+                        )}
                       </div>
-                      <code style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-muted);">{r.slug}</code>
-                      {isTaint(r.id) && (
-                        <span title="Dataflow rule — traces untrusted/sensitive data from source to a dangerous sink" style="display:inline-flex; align-items:center; gap:4px; margin-left:8px; font-family:var(--ol-font-mono); font-size:9px; font-weight:600; letter-spacing:0.06em; color:var(--ol-accent); border:1px solid var(--ol-accent-800); border-radius:2px; padding:1px 5px; line-height:1.4; vertical-align:middle;">
-                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h11"></path><path d="M4 7l3-3M4 7l3 3"></path><path d="M20 17H9"></path><path d="M20 17l-3-3M20 17l-3 3"></path></svg>
-                          DATAFLOW
-                        </span>
-                      )}
+                      <div style="font-size:13.5px; line-height:1.45; color:var(--ol-text-secondary);" set:html={renderInline(r.title)} />
                     </td>
                     <td style={`padding:13px 16px; border-bottom:1px solid var(--ol-border-subtle); font-size:13px; font-weight:600; color:${SEV[r.severity].color}; white-space:nowrap;`}>{SEV[r.severity].label}</td>
                     <td style="padding:13px 16px; border-bottom:1px solid var(--ol-border-subtle); font-size:13px; color:var(--ol-text-secondary);">{topicLabel(cat)}</td>

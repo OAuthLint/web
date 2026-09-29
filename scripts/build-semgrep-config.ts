@@ -26,7 +26,7 @@
  *
  * Run directly with: `pnpm --filter oauthlint-site build:semgrep`
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -127,7 +127,7 @@ async function emit(filename: string, contents: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const rules = await loadAllRules();
+  const rules = loadAllRules();
   if (rules.length === 0) {
     throw new Error('No rules were loaded — refusing to write an empty Semgrep bundle.');
   }

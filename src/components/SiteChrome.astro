@@ -9,7 +9,7 @@
  */
 interface Props {
   /** Which primary nav link is the current page (renders in the accent colour). */
-  active?: 'docs' | 'rules' | 'pricing' | 'security';
+  active?: string;
 }
 const { active } = Astro.props;
 const GH = 'https://github.com/OAuthLint/oauthlint';
@@ -20,10 +20,38 @@ const LINKS = [
   { key: 'security', label: 'Security', href: '/security' },
 ] as const;
 const FOOTER = [
-  { title: 'Product', links: [['Docs', '/docs'], ['Rules', '/rules'], ['Pricing', '/pricing'], ['Changelog', '/changelog']] },
-  { title: 'Trust', links: [['Security', '/security'], ['Research', '/research'], ['Status', '/status']] },
-  { title: 'Project', links: [['About', '/about'], ['GitHub', GH]] },
-  { title: 'Legal', links: [['Terms', '/terms'], ['Privacy', '/privacy'], ['DPA', '/dpa']] },
+  {
+    title: 'Product',
+    links: [
+      ['Docs', '/docs'],
+      ['Rules', '/rules'],
+      ['Pricing', '/pricing'],
+      ['Changelog', '/changelog'],
+    ],
+  },
+  {
+    title: 'Trust',
+    links: [
+      ['Security', '/security'],
+      ['Research', '/research'],
+      ['Status', '/status'],
+    ],
+  },
+  {
+    title: 'Project',
+    links: [
+      ['About', '/about'],
+      ['GitHub', GH],
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      ['Terms', '/terms'],
+      ['Privacy', '/privacy'],
+      ['DPA', '/dpa'],
+    ],
+  },
 ];
 const logo = `<svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="13" y="11" width="38" height="27" stroke="var(--ol-accent)" stroke-width="5"/><path d="M11 50c3-5 6-5 9 0s6 5 9 0 6-5 9 0 6 5 9 0" stroke="var(--ol-sev-critical)" stroke-width="5" stroke-linecap="round"/></svg>`;
 ---

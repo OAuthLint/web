@@ -326,8 +326,12 @@ nav a[href]:hover {
 
 /* Landing dashboard preview: swap the Cloud overview screenshot with the theme
    (a static image replaces the design canvas's live iframe on the marketing site). */
-[data-theme='light'] .ol-ov-dark { display: none !important; }
-[data-theme='light'] .ol-ov-light { display: block !important; }
+[data-theme="light"] .ol-ov-dark {
+  display: none !important;
+}
+[data-theme="light"] .ol-ov-light {
+  display: block !important;
+}
 /* ---- Docs search (Pagefind v2 web component), themed to Tracer ---- */
 .docs-search {
   margin: 0 0 var(--ol-space-5);
@@ -391,4 +395,46 @@ nav a[href]:hover {
   border: 1px solid var(--ol-border);
   border-radius: var(--ol-radius-xs);
   color: var(--ol-text-secondary);
+}
+
+/* Pagefind v2 injects its own light-only styles at runtime; force the Tracer
+   theme tokens so the docs search follows dark/light. */
+.docs-search .pf-searchbox-input {
+  background: var(--ol-surface) !important;
+  color: var(--ol-text) !important;
+  border: 1px solid var(--ol-border-strong) !important;
+}
+.docs-search .pf-searchbox-input::placeholder,
+.docs-search .pf-searchbox-placeholder {
+  color: var(--ol-text-faint) !important;
+}
+.docs-search .pf-searchbox-dropdown,
+.docs-search .pf-searchbox-results {
+  background: var(--ol-surface) !important;
+  border-color: var(--ol-border) !important;
+  color: var(--ol-text) !important;
+}
+.docs-search .pf-searchbox-result {
+  border-color: var(--ol-border-subtle) !important;
+}
+.docs-search .pf-searchbox-result-title,
+.docs-search .pf-searchbox-result a {
+  color: var(--ol-text) !important;
+}
+.docs-search .pf-searchbox-result-excerpt,
+.docs-search .pf-searchbox-status,
+.docs-search .pf-searchbox-footer,
+.docs-search .pf-searchbox-footer-hint {
+  color: var(--ol-text-muted) !important;
+}
+.docs-search .pf-searchbox-footer-key,
+.docs-search .pf-trigger-key,
+.docs-search .pf-searchbox-loading {
+  background: var(--ol-surface-raised) !important;
+  border-color: var(--ol-border) !important;
+  color: var(--ol-text-secondary) !important;
+}
+.docs-search mark {
+  background: var(--ol-accent-subtle) !important;
+  color: var(--ol-accent) !important;
 }

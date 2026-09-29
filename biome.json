@@ -10,17 +10,11 @@
     "ignore": [
       "**/dist/**",
       "**/node_modules/**",
+      "**/.astro/**",
       "**/*.min.js",
       "**/coverage/**",
-      "**/examples/**/vulnerable.*",
-      "**/examples/**/dist/**",
-      "rules/tests/fixtures/**",
-      "benchmark/archive/**",
-      "benchmark/results/**",
-      "site/.astro/**",
-      "site/dist/**",
-      "site/src/html/**",
-      "design/_export/**"
+      "vendor/**",
+      "src/html/**"
     ]
   },
   "formatter": {

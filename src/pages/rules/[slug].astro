@@ -100,6 +100,23 @@ const PREV: Record<'HIGH' | 'MEDIUM' | 'LOW', { label: string; color: string }> 
 };
 const prev = PREV[rule.llmPrevalence];
 
+// Dataflow (taint) rules — the analysis mode a rule runs in. Kept in sync with
+// the TAINT_RULE_IDS set in rules/index.astro (RuleView does not yet expose the
+// analysis `mode`, so both pages carry the known taint set).
+const TAINT_RULE_IDS = new Set<string>([
+  'auth.flow.open-redirect',
+  'auth.flow.secret-in-response',
+  'auth.flow.ssrf',
+  'auth.go.flow.open-redirect',
+  'auth.go.flow.secret-in-response',
+  'auth.go.flow.ssrf',
+  'auth.oauth.open-redirect-callback',
+  'auth.py.flow.open-redirect',
+  'auth.py.flow.secret-in-response',
+  'auth.py.flow.ssrf',
+]);
+const isTaint = TAINT_RULE_IDS.has(rule.id);
+
 // Full language names for the masthead's plain-text language list (the
 // catalogue's short "js / ts" form is for a dense table; here there's room).
 const FULL_LANG_LABEL: Record<string, string> = {
@@ -209,6 +226,12 @@ const articleJsonLd = {
               ? <a href={owaspHref} rel="noopener noreferrer" target="_blank" class="ol-ref-badge" style="display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid var(--ol-border-strong); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary); text-decoration:none;">OWASP {rule.owasp}</a>
               : <code style="display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid var(--ol-border-strong); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">OWASP {rule.owasp}</code>)}
             <span title="How often AI coding tools generate this anti-pattern by default" style={`display:inline-flex; align-items:center; height:26px; padding:0 9px; border:1px solid ${prev.color}; border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${prev.color};`}>AI: {prev.label}</span>
+            {isTaint && (
+              <span title="Dataflow rule. Traces untrusted/sensitive data from source to a dangerous sink." style="display:inline-flex; align-items:center; gap:5px; height:26px; padding:0 9px; border:1px solid var(--ol-accent-800); border-radius:3px; font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:var(--ol-accent);">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h11"></path><path d="M4 7l3-3M4 7l3 3"></path><path d="M20 17H9"></path><path d="M20 17l-3-3M20 17l-3 3"></path></svg>
+                DATAFLOW
+              </span>
+            )}
             <span style="font-family:var(--ol-font-ui); font-size:13px; color:var(--ol-text-muted); margin-left:4px;">{langBadge}</span>
           </div>
         </header>
@@ -272,7 +295,7 @@ const articleJsonLd = {
       <aside class="rule-detail-rail" style="position:sticky; top:80px; align-self:start; height:fit-content; display:flex; flex-direction:column; gap:var(--ol-space-4);">
         <div style="border:1px solid var(--ol-border); border-radius:3px; overflow:hidden;">
           <div style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-faint); padding:12px 16px; border-bottom:1px solid var(--ol-border);">METADATA</div>
-          <div style="padding:var(--ol-space-4); display:flex; flex-direction:column; gap:12px;">
+          <div class="rule-meta" style="padding:var(--ol-space-4); display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">Severity</span><span style={`font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${sev.main};`}>● {sev.label.toUpperCase()}</span></div>
             <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">OAuthLint id</span><span style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{rule.ruleId}</span></div>
             {rule.cwe && <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">CWE</span>{cweHref
@@ -283,6 +306,7 @@ const articleJsonLd = {
               : <span style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{rule.owasp}</span>}</div>}
             <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">Category</span><span style="font-family:var(--ol-font-mono); font-size:12px; color:var(--ol-text-secondary);">{catLabel}</span></div>
             <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">AI prevalence</span><span style={`font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${prev.color};`}>● {prev.label}</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; color:var(--ol-text-muted);">Analysis</span><span style={`font-family:var(--ol-font-mono); font-size:12px; font-weight:600; color:${isTaint ? 'var(--ol-accent)' : 'var(--ol-text-secondary)'};`}>{isTaint ? 'Dataflow' : 'Pattern'}</span></div>
           </div>
         </div>
         <a href="/rules" style="display:inline-flex; align-items:center; gap:8px; font-family:var(--ol-font-mono); font-weight:500; font-size:12px; color:var(--ol-text-secondary); background:var(--ol-surface); border:1px solid var(--ol-border-strong); height:38px; padding:0 16px; text-decoration:none; justify-content:center; border-radius:3px;">← all rules</a>
@@ -329,6 +353,23 @@ const articleJsonLd = {
   .ol-ref-link:hover {
     color: var(--ol-accent);
     border-color: var(--ol-accent);
+  }
+
+  /* METADATA rail rows: keep a firm gap between label and value so long mono
+     values (e.g. the OAuthLint id) never collide with the label, and let a
+     value wrap cleanly instead of overlapping in a narrow rail. */
+  .rule-meta > div {
+    gap: 14px;
+    align-items: baseline;
+  }
+  .rule-meta > div > :first-child {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .rule-meta > div > :last-child {
+    text-align: right;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   /* Inline `code` spans in the rule prose (masthead title and "What it
