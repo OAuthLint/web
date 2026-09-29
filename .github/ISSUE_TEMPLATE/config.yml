@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/OAuthLint/web/security/policy
+    about: Please report security issues privately (see SECURITY.md), not as public issues.
+  - name: OAuthLint CLI / rules
+    url: https://github.com/OAuthLint/oauthlint/issues
+    about: Bugs in the linter itself or a rule belong in the CLI repository.
