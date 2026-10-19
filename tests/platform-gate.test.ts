@@ -77,6 +77,25 @@ describe('homepage source', () => {
   });
 });
 
+describe('public assets', () => {
+  // Stripping the markup that references a screenshot is only half the job:
+  // Astro copies public/ verbatim, so /img/overview-dark.png answered 200 to
+  // anyone with the URL long after the section was gone. The build integration
+  // in astro.config.mjs withholds them; this guards that it stays wired.
+  it('withholds the platform screenshots from the build', () => {
+    const config = readFileSync(
+      fileURLToPath(new URL('../astro.config.mjs', import.meta.url)),
+      'utf8',
+    );
+    expect(config, 'the gate integration is not registered').toMatch(
+      /integrations:\s*\[[^\]]*gatePlatformAssets\(\)/,
+    );
+    for (const asset of ['img/overview-dark.png', 'img/overview-light.png']) {
+      expect(config, `${asset} is no longer gated`).toContain(asset);
+    }
+  });
+});
+
 describe('rendered homepage', () => {
   // Asserted on a boolean rather than the 50 KB document: `expect(html).not
   // .toContain(x)` prints the whole page on failure, which buries the one line
