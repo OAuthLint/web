@@ -1,6 +1,15 @@
 ---
-import body from '../html/index.html?raw';
+import { applyPlatformGate } from '../config';
+import rawBody from '../html/index.html?raw';
 import Base from '../layouts/Base.astro';
+
+// The hosted platform has not shipped. Three blocks of this page described it as
+// if it had - the "Every repository, one view." dashboard screenshot, the
+// "Run it yourself, or let us run it." plan cards, and the signup sub-headline
+// under the closing call to action - so they are stripped from the build rather
+// than hidden with CSS. See applyPlatformGate in src/config.ts for why, and flip
+// PLATFORM_LIVE there to bring all of them back at once.
+const body = applyPlatformGate(rawBody);
 ---
 <Base title="OAuthLint: catch the auth bugs AI assistants ship" description="A static-analysis linter for the OAuth, OIDC, JWT, MCP, session and CORS anti-patterns AI coding tools generate. Hand-curated rules, zero false positives on clean auth libraries. Open source, MIT.">
   <Fragment set:html={body} />
