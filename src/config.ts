@@ -78,5 +78,26 @@ export function applyPlatformGate(html: string): string {
   // The surviving side keeps its content but loses its delimiters: the markers
   // are build instructions, not page content, and have no business shipping.
   const marker = /[ \t]*<!--\/?(?:platform|prelaunch)-only-->[ \t]*\r?\n?/g;
-  return html.replace(block, '').replace(marker, '');
+  const out = html.replace(block, '').replace(marker, '');
+  return PLATFORM_LIVE ? out : out.replace(DEAD_APP_ANCHOR, '');
 }
+
+/**
+ * Every <a> pointing at the hosted app, which does not exist.
+ *
+ * ⚠️ `app.oauthlint.dev` has NO DNS RECORD AT ALL - a click does not even get a
+ * 404, the connection fails. These anchors were only CSS-hidden (the
+ * `body.platform-prelaunch` rule in Base.astro), which this file's own docstring
+ * above calls the weaker half: "a hidden <a> is harmless" is true for a reader
+ * and false for a crawler, which still follows 2 dead links out of every page.
+ *
+ * Non-greedy on purpose, and safe because anchors cannot nest: `.*?</a>` stops
+ * at the first closing tag. Verified across all 12 captured partials - the count
+ * of <a> tags removed equals the count of app.oauthlint.dev occurrences in every
+ * single file, so it takes exactly these anchors and nothing adjacent.
+ *
+ * The CSS rule in Base.astro stays as a BACKSTOP, not as the mechanism: if a new
+ * partial ever arrives without going through this gate, it still gets hidden.
+ */
+const DEAD_APP_ANCHOR =
+  /[ \t]*<a\b[^>]*href="https:\/\/app\.oauthlint\.dev[^"]*"[^>]*>.*?<\/a>[ \t]*\r?\n?/gs;

@@ -92,8 +92,21 @@ const editHref = `https://github.com/OAuthLint/docs/edit/main/src/pages/docs/${s
             ></path>
           </svg>
         </a>
-        <a href="https://app.oauthlint.dev/login" class="docs-signin">Sign in</a>
-        <a href="https://app.oauthlint.dev/signup" class="docs-startfree">Start free</a>
+        {
+          /* Meme raison que dans SiteChrome.astro : app.oauthlint.dev n a AUCUN
+             enregistrement DNS. Cette entete rend les ~26 pages de docs, le dernier
+             endroit du site ou ces deux liens morts subsistaient. */
+        }
+        {
+          PLATFORM_LIVE && (
+            <>
+              <a href="https://app.oauthlint.dev/login" class="docs-signin">Sign in</a>
+              <a href="https://app.oauthlint.dev/signup" class="docs-startfree">
+                Start free
+              </a>
+            </>
+          )
+        }
       </div>
     </nav>
 
