@@ -10,6 +10,49 @@
 export const PLATFORM_LIVE = false;
 
 /**
+ * True for a route that only makes sense once OAuthLint Cloud has shipped.
+ *
+ * The list is not a guess: each one of these pages describes the hosted product
+ * in its own body text. `/status` reports uptime for workers that do not run,
+ * `/dpa` is a GDPR Article 28 agreement for data nobody processes yet, and
+ * `/docs/self-host` sits under the "OAuthLint Cloud" docs group and tells the
+ * reader to `git clone github.com/oauthlint/cloud` - a repository that returns
+ * 404 today.
+ *
+ * Named to match the helper the in-flight docs/site redesign already carries,
+ * so the two converge instead of growing a second vocabulary for the same idea.
+ */
+export function isCloudPath(path: string): boolean {
+  const pathname = path.replace(/\/+$/, '') || '/';
+  return (
+    pathname === '/docs/cloud' ||
+    pathname.startsWith('/docs/cloud/') ||
+    ['/cloud', '/pricing', '/status', '/dpa', '/docs/self-host'].includes(pathname)
+  );
+}
+
+/**
+ * Whether a route may be offered to search engines.
+ *
+ * ⚠️ This closes a CONTRADICTION in this file, not a product choice. The comment
+ * above says PLATFORM_LIVE keeps Pricing and the Cloud docs HIDDEN, and
+ * applyPlatformGate's own docstring below spells out why hiding is not enough:
+ * something "would still sit in the page source, still be fetched, and still be
+ * indexable". Yet Base.astro emitted `robots: index,follow` on EVERY page and
+ * the sitemap listed all of them - 13 of the 320 URLs in sitemap-0.xml pointed
+ * at the unshipped platform, including fabricated uptime figures on /status.
+ *
+ * So the pages stay reachable by URL (nothing is deleted, nothing 404s) but they
+ * are no longer ADVERTISED. Flip PLATFORM_LIVE and they are advertised again,
+ * with no other change.
+ */
+export function isIndexablePath(path: string): boolean {
+  const pathname = path.replace(/\/+$/, '') || '/';
+  if (pathname === '/404') return false;
+  return PLATFORM_LIVE || !isCloudPath(pathname);
+}
+
+/**
  * Removes the blocks of a raw HTML partial that must not ship in this build.
  *
  * The marketing pages are captured HTML imported with `?raw`, so an Astro

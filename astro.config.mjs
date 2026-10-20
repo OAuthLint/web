@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import pagefind from 'astro-pagefind';
 // @ts-check
 import { defineConfig } from 'astro/config';
-import { PLATFORM_LIVE } from './src/config';
+import { PLATFORM_LIVE, isIndexablePath } from './src/config';
 
 // Static site for oauthlint.dev. Built into `dist/`, baked into the nginx image
 // by Dockerfile, and served self-hosted on k3s behind a Cloudflare Tunnel - NOT
@@ -39,7 +39,15 @@ export default defineConfig({
   site: 'https://oauthlint.dev',
   output: 'static',
   trailingSlash: 'ignore',
-  integrations: [sitemap(), pagefind(), gatePlatformAssets()],
+  integrations: [
+    // Le sitemap est la LISTE qu on soumet aux moteurs. Y laisser les routes de la
+    // plateforme non sortie, c est les leur proposer activement — 13 des 320 URL,
+    // dont /status et ses chiffres d exploitation inventes. Le filtre recoit une
+    // URL absolue, d ou le `new URL(...).pathname`.
+    sitemap({ filter: (page) => isIndexablePath(new URL(page).pathname) }),
+    pagefind(),
+    gatePlatformAssets(),
+  ],
   markdown: {
     // Dual-theme highlighting for fenced code blocks, matching the fixture
     // highlighter in src/lib/highlight.ts. `defaultColor: false` emits both

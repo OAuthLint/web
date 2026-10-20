@@ -2,7 +2,7 @@
 import '../styles/tokens.css';
 import '../styles/global.css';
 import AnnouncementBar from '../components/AnnouncementBar.astro';
-import { PLATFORM_LIVE } from '../config';
+import { PLATFORM_LIVE, isIndexablePath } from '../config';
 
 interface Props {
   title: string;
@@ -80,7 +80,15 @@ const jsonLd = {
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="author" content="Auspeo" />
-    <meta name="robots" content="index,follow" />
+    {
+      /* Les routes de la plateforme non sortie restent JOIGNABLES mais ne sont plus
+         PROPOSEES : voir isIndexablePath dans src/config.ts pour la contradiction
+         que ceci corrige. Rien n est supprime, rien ne rend 404. */
+    }
+    <meta
+      name="robots"
+      content={isIndexablePath(Astro.url.pathname) ? 'index,follow' : 'noindex,nofollow'}
+    />
     <link rel="canonical" href={canonical} />
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
     <meta name="theme-color" content="#0E1113" />
