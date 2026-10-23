@@ -1,0 +1,121 @@
+---
+import { ArrowRight, Check, CircleAlert, FileCode } from '@lucide/astro';
+import { demoExamples } from '../data/demo';
+import { ruleTitle } from '../lib/catalogue';
+import { highlightCode } from '../lib/highlight';
+import { getRules } from '../lib/rules';
+import CopyButton from './CopyButton.astro';
+import SeverityBadge from './SeverityBadge.astro';
+const rules = getRules();
+const examples = await Promise.all(
+  demoExamples.map(async (example) => {
+    const rule = rules.find((entry) => entry.id === example.ruleId);
+    if (!rule) throw new Error(`Demo rule missing from pack: ${example.ruleId}`);
+    return {
+      ...example,
+      rule,
+      beforeHtml: await highlightCode(example.before, example.language),
+      afterHtml: await highlightCode(example.after, example.language),
+    };
+  }),
+);
+---
+<section class="scan-demo" aria-label="Authentication diagnostic example" data-scan-demo>
+  <div class="demo-toolbar">
+    <div class="demo-title"><FileCode size={17} aria-hidden="true" /><span>Inside a finding</span></div>
+    <label class="demo-selector js-only"><span class="sr-only">Code example</span><select data-demo-select>{examples.map((example) => <option value={example.id}>{example.label}</option>)}</select></label>
+    <span class="example-label">Rule example</span>
+  </div>
+  {examples.map((example, index) => <div data-demo-example={example.id} hidden={index !== 0}>
+    <div class="demo-workspace">
+      <div class="demo-editor">
+        <div class="editor-toolbar"><span>{example.filename}</span><div class="demo-segments js-only" role="group" aria-label="Example state">
+          <button type="button" data-demo-mode="before" aria-pressed="true">Diagnostic</button>
+          <button type="button" data-demo-mode="after" aria-pressed="false">Correction</button>
+        </div></div>
+        <div class="demo-code-state" data-demo-state="before"><div class="code-content numbered-code" set:html={example.beforeHtml} /><CopyButton value={example.before} /></div>
+        <div class="demo-code-state" data-demo-state="after" hidden><div class="code-content numbered-code corrected" set:html={example.afterHtml} /><CopyButton value={example.after} /></div>
+      </div>
+      <div class="demo-diagnostic">
+        <div data-demo-state="before">
+          <div class="diagnostic-meta"><SeverityBadge severity={example.rule.severity} /><span>Authentication</span></div>
+          <h2>{ruleTitle(example.rule)}</h2>
+          <p>{example.problem}</p>
+          <div class="diagnostic-line"><CircleAlert size={15} aria-hidden="true" /><code>{example.rule.id}</code></div>
+          <button type="button" class="text-link demo-correct js-only" data-demo-mode="after">View correction <ArrowRight size={16} aria-hidden="true" /></button>
+        </div>
+        <div data-demo-state="after" hidden>
+          <div class="corrected-label"><Check size={15} aria-hidden="true" />Corrected example</div>
+          <h2>Make the trust boundary explicit.</h2>
+          <p>{example.correction}</p>
+          <p class="example-caveat">Illustrative correction. Review it in the context of your application.</p>
+        </div>
+        <a class="demo-rule-link" href={'/rules/' + example.rule.slug}>Read the rule <ArrowRight size={15} aria-hidden="true" /></a>
+      </div>
+    </div>
+  </div>)}
+  <div class="demo-status"><span><span class="status-mark" aria-hidden="true"></span>Local static analysis</span><span>Source location. Explanation. Correction.</span></div>
+</section>
+<script>
+  const demo = document.querySelector<HTMLElement>('[data-scan-demo]');
+  if (demo) {
+    const panels = [...demo.querySelectorAll<HTMLElement>('[data-demo-example]')];
+    const select = demo.querySelector<HTMLSelectElement>('[data-demo-select]');
+    select?.addEventListener('change', () => {
+      for (const panel of panels) panel.hidden = panel.dataset.demoExample !== select.value;
+    });
+    demo.addEventListener('click', (event) => {
+      const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('[data-demo-mode]') : null;
+      const panel = button?.closest<HTMLElement>('[data-demo-example]');
+      if (!button || !panel) return;
+      const mode = button.dataset.demoMode;
+      for (const state of panel.querySelectorAll<HTMLElement>('[data-demo-state]')) state.hidden = state.dataset.demoState !== mode;
+      for (const control of panel.querySelectorAll<HTMLElement>('[aria-pressed]')) control.setAttribute('aria-pressed', String(control.dataset.demoMode === mode));
+      // Return focus to the persistent segmented control if the action hides itself.
+      if (button.closest('[data-demo-state]')) panel.querySelector<HTMLButtonElement>('.demo-segments [data-demo-mode="' + mode + '"]')?.focus();
+    });
+  }
+</script>
+<style>
+  .scan-demo { border-top: 1px solid var(--ol-border-strong); border-bottom: 1px solid var(--ol-border-strong); }
+  .demo-toolbar { min-height: 56px; display: flex; align-items: center; gap: 24px; padding: 8px 0; }
+  .demo-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+  .demo-title svg { color: var(--ol-accent); }
+  .demo-selector { margin-left: auto; }
+  select { background: var(--ol-page); border: 1px solid var(--ol-border); color: var(--ol-text-secondary); border-radius: 4px; height: 36px; padding: 4px 28px 4px 10px; font-size: 12px; max-width: 100%; }
+  .example-label { color: var(--ol-text-muted); font-size: 12px; }
+  .demo-workspace { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); border-top: 1px solid var(--ol-border); }
+  .demo-editor { background: var(--ol-code-bg); min-width: 0; border-right: 1px solid var(--ol-border); }
+  .editor-toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; min-height: 50px; padding: 8px 16px 8px 24px; color: var(--ol-text-muted); border-bottom: 1px solid var(--ol-border); }
+  .editor-toolbar > span { font: 11px var(--ol-font-mono); }
+  .demo-segments { display: flex; border: 1px solid var(--ol-border); border-radius: 4px; padding: 2px; gap: 2px; }
+  .demo-segments button { min-height: 30px; padding: 3px 10px; font-size: 12px; background: transparent; color: var(--ol-text-muted); border: 0; border-radius: 2px; }
+  .demo-segments button[aria-pressed="true"] { background: var(--ol-surface-raised); color: var(--ol-text); box-shadow: 0 0 0 1px var(--ol-border); }
+  .demo-code-state { position: relative; }
+  .demo-code-state > :global(button) { position: absolute; right: 8px; bottom: 8px; }
+  .numbered-code :global(pre) { font: 12px/2.2 var(--ol-font-mono); margin: 0; padding: 24px 20px 34px 0; overflow: auto; min-height: 298px; counter-reset: code-line; }
+  .numbered-code :global(.line) { display: inline-block; min-width: 100%; padding-right: 20px; }
+  .numbered-code :global(.line::before) { counter-increment: code-line; content: counter(code-line); display: inline-block; width: 50px; margin-right: 12px; text-align: center; color: var(--ol-text-muted); font-size: 10px; }
+  .numbered-code :global(.line:nth-child(4)), .numbered-code :global(.line:nth-child(5)), .numbered-code :global(.line:nth-child(6)) { background: color-mix(in srgb, var(--ol-sev-medium-bg) 60%, transparent); }
+  .corrected :global(.line:nth-child(4)), .corrected :global(.line:nth-child(5)), .corrected :global(.line:nth-child(6)) { background: color-mix(in srgb, var(--ol-sev-pass-bg) 65%, transparent); }
+  .demo-diagnostic { min-height: 348px; display: flex; flex-direction: column; padding: 24px 28px; background: var(--ol-surface); }
+  .diagnostic-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .diagnostic-meta > span { font-size: 12px; color: var(--ol-text-muted); }
+  h2 { font-size: 21px; font-weight: 600; max-width: 26ch; margin-bottom: 14px; }
+  .demo-diagnostic p { font-size: 14px; line-height: 1.7; color: var(--ol-text-secondary); margin-bottom: 20px; }
+  .diagnostic-line { display: flex; gap: 8px; align-items: center; color: var(--ol-text-muted); }
+  .diagnostic-line code { font-size: 10px; overflow-wrap: anywhere; }
+  .diagnostic-line svg { color: var(--ol-sev-medium); }
+  .demo-correct { background: none; border: 0; padding: 0; margin-top: 20px; min-height: 30px; font-size: 13px; }
+  .demo-rule-link { margin-top: auto; padding-top: 16px; display: flex; align-items: center; gap: 8px; font-size: 12px; text-decoration: none; color: var(--ol-text-muted); }
+  .demo-rule-link:hover { color: var(--ol-accent); }
+  .corrected-label { display: flex; gap: 8px; align-items: center; color: var(--ol-sev-pass); font-size: 12px; margin-bottom: 18px; }
+  .demo-diagnostic .example-caveat { font-size: 12px; color: var(--ol-text-muted); }
+  .demo-status { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; padding: 8px 0; font-size: 11px; color: var(--ol-text-muted); border-top: 1px solid var(--ol-border); }
+  .demo-status > span:first-child { display: flex; align-items: center; gap: 8px; }
+  .status-mark { width: 6px; height: 6px; border-radius: 50%; background: var(--ol-sev-pass); }
+  :global(html:not(.js)) .js-only { display: none; }
+  @media (prefers-reduced-motion: no-preference) { [data-demo-state]:not([hidden]) { animation: diagnostic-enter 160ms ease-out; } @keyframes diagnostic-enter { from { opacity: .5; } to { opacity: 1; } } }
+  @media (max-width: 900px) { .demo-diagnostic { padding: 20px; } .numbered-code :global(pre) { font-size: 11px; } .example-label { display: none; } }
+  @media (max-width: 700px) { .demo-workspace { grid-template-columns: 1fr; } .demo-editor { border-right: 0; } .demo-diagnostic { min-height: 290px; border-top: 1px solid var(--ol-border); } .demo-status > span:last-child { display: none; } .demo-toolbar { gap: 12px; } .demo-title { font-size: 12px; } .demo-selector { min-width: 0; } select { width: 100%; font-size: 11px; } .editor-toolbar { padding-inline: 12px; } .numbered-code :global(pre) { min-height: 270px; } h2 { max-width: none; } }
+</style>

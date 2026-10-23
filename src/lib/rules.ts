@@ -67,6 +67,8 @@ export interface RuleView {
   title: string;
   /** Design severity. */
   severity: Severity;
+  /** Analysis mode from the shipped YAML, not a manually maintained ID list. */
+  mode: 'pattern' | 'taint';
   /** Category bucket, e.g. `jwt`, `py-jwt`. */
   category: string;
   /** Semgrep languages, normalised (e.g. `ts`, `python`, `go`). */
@@ -200,6 +202,7 @@ interface RawRule {
   id: string;
   languages: string[];
   severity: string;
+  mode?: string;
   message: string;
   metadata: RawMetadata;
 }
@@ -244,6 +247,7 @@ export function getRules(): RuleView[] {
         // Rules may carry a design severity override in metadata.severity;
         // otherwise map the Semgrep level.
         severity: toDesignSeverity(m.severity ?? rule.severity),
+        mode: rule.mode === 'taint' ? 'taint' : 'pattern',
         category: categoryFromId(rule.id),
         languages: rule.languages.map((l) => LANG_LABEL[l] ?? l),
         message: rule.message.trim(),

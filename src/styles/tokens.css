@@ -108,9 +108,9 @@
   --ol-pro-border: oklch(0.43 0.095 268);
 
   /* ---- Typography ---- */
-  --ol-font-display: "Sora", "Hanken Grotesk", system-ui, sans-serif;
-  --ol-font-ui: "Hanken Grotesk", system-ui, -apple-system, sans-serif;
-  --ol-font-mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --ol-font-display: "Sora Variable", system-ui, sans-serif;
+  --ol-font-ui: "Hanken Grotesk Variable", system-ui, -apple-system, sans-serif;
+  --ol-font-mono: "Martian Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
 
   --ol-text-display-xl: 3rem; /* 48 */
   --ol-text-display-l: 2.25rem; /* 36 */
@@ -136,10 +136,10 @@
   --ol-leading-normal: 1.5;
   --ol-leading-relaxed: 1.65;
 
-  --ol-tracking-tight: -0.02em;
-  --ol-tracking-snug: -0.01em;
+  --ol-tracking-tight: 0;
+  --ol-tracking-snug: 0;
   --ol-tracking-normal: 0;
-  --ol-tracking-wide: 0.08em; /* mono labels / eyebrows */
+  --ol-tracking-wide: 0;
 
   /* ---- Spacing (4px base) ---- */
   --ol-space-px: 1px;

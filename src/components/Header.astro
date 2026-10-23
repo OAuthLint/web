@@ -1,0 +1,39 @@
+---
+import { ArrowUpRight, Menu, Moon, Sun, X } from '@lucide/astro';
+import { GITHUB_URL, SHOW_CLOUD } from '../config';
+import Brand from './Brand.astro';
+import Search from './Search.astro';
+interface Props {
+  active?: string;
+}
+const { active } = Astro.props;
+const links = [
+  { key: 'docs', label: 'Documentation', href: '/docs' },
+  { key: 'rules', label: 'Rules', href: '/rules' },
+  { key: 'security', label: 'Security', href: '/security' },
+  { key: 'changelog', label: 'Changelog', href: '/changelog' },
+  ...(SHOW_CLOUD ? [{ key: 'cloud', label: 'Cloud', href: '/cloud' }] : []),
+];
+---
+<header class="site-header" data-pagefind-ignore>
+  <div class="header-inner">
+    <Brand />
+    <nav class="desktop-nav" aria-label="Primary">
+      {links.map((link) => <a href={link.href} aria-current={active === link.key ? 'page' : undefined}>{link.label}</a>)}
+    </nav>
+    <div class="header-actions">
+      <Search />
+      <a class="github-link" href={GITHUB_URL} target="_blank" rel="noopener noreferrer">GitHub <ArrowUpRight size={14} aria-hidden="true" /></a>
+      <button type="button" class="icon-button theme-toggle" data-theme-toggle aria-label="Switch theme" title="Switch theme">
+        <Sun size={18} class="sun-icon" aria-hidden="true" /><Moon size={18} class="moon-icon" aria-hidden="true" />
+      </button>
+      <details class="mobile-nav" data-disclosure>
+        <summary class="icon-button" aria-label="Navigation menu" title="Navigation menu"><Menu size={20} class="menu-icon" aria-hidden="true" /><X size={20} class="close-icon" aria-hidden="true" /></summary>
+        <nav aria-label="Mobile primary" class="mobile-nav-panel">
+          {links.map((link) => <a href={link.href} aria-current={active === link.key ? 'page' : undefined}>{link.label}</a>)}
+          <a href={GITHUB_URL}>GitHub <ArrowUpRight size={16} aria-hidden="true" /></a>
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>

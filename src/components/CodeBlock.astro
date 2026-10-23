@@ -1,0 +1,30 @@
+---
+import { FileCode } from '@lucide/astro';
+import { highlightCode } from '../lib/highlight';
+import type { FixtureLang } from '../lib/rules';
+import CopyButton from './CopyButton.astro';
+interface Props {
+  code: string;
+  language: FixtureLang;
+  filename?: string;
+  label?: string;
+  tone?: 'danger' | 'success' | 'neutral';
+}
+const { code, language, filename, label, tone = 'neutral' } = Astro.props;
+const html = await highlightCode(code, language);
+---
+<div class="code-block" data-tone={tone}>
+  <div class="code-header"><span><FileCode size={15} aria-hidden="true" />{filename ?? language}</span>{label && <span class="code-label">{label}</span>}<CopyButton value={code} /></div>
+  <div class="code-content" set:html={html} />
+</div>
+<style>
+  .code-block { min-width: 0; max-width: 100%; border: 1px solid var(--ol-border); border-radius: 6px; overflow: hidden; background: var(--ol-code-bg); }
+  .code-header { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--ol-border); background: var(--ol-surface); color: var(--ol-text-muted); font-size: 12px; }
+  .code-header > span:first-child { display: inline-flex; align-items: center; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+  .code-label { margin-left: auto; }
+  .code-header :global(button) { margin-left: auto; }
+  [data-tone="danger"] .code-label { color: var(--ol-sev-critical); }
+  [data-tone="success"] .code-label { color: var(--ol-sev-pass); }
+  .code-content :global(pre) { font: 12px/1.9 var(--ol-font-mono); margin: 0; padding: 20px; overflow-x: auto; }
+  @media (max-width: 480px) { .code-content :global(pre) { font-size: 11px; padding: 16px; } }
+</style>

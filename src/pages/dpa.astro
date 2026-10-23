@@ -1,8 +1,13 @@
 ---
-import { applyPlatformGate } from '../config';
-import body from '../html/dpa.html?raw';
-import Base from '../layouts/Base.astro';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+const headings = [
+  { slug: 'what-we-process', text: 'What we process' },
+  { slug: 'how-we-protect-it', text: 'How we protect it' },
+  { slug: 'sub-processors', text: 'Sub-processors' },
+  { slug: 'breaches', text: 'Breaches' },
+  { slug: 'signing', text: 'Signing' },
+];
 ---
-<Base title="Data Processing Agreement — OAuthLint" description="OAuthLint is built by identity & security engineers at Auspeo. Why curation beats coverage, and the project changelog.">
-  <Fragment set:html={applyPlatformGate(body)} />
-</Base>
+<ArticleLayout title="Data Processing Agreement" headings={headings} cloudOnly>
+<h1>Data Processing Agreement</h1><p>Last updated <time datetime="2026-09-01">2026-09-01</time> · GDPR Article 28</p><p>This agreement applies when you use OAuthLint Cloud and it processes personal data on your behalf. You are the controller; Auspeo SAS is the processor.</p><h2 id="what-we-process">What we process</h2><p>Names and email addresses of your members, commit author names on findings, and any personal data inside code snippets you choose to send.</p><h2 id="how-we-protect-it">How we protect it</h2><ul><li>Encryption in transit (TLS 1.2+) and at rest (AES-256).</li><li>Access limited to on-call engineers, logged and reviewed.</li><li>Annual penetration test; summary available on request.</li></ul><h2 id="sub-processors">Sub-processors</h2><p>The list on the <a href="/privacy">Privacy Policy</a> is part of this agreement. You can object to a new one within 30 days.</p><h2 id="breaches">Breaches</h2><p>We notify you without undue delay, and within 48 hours, of any breach affecting your data.</p><h2 id="signing">Signing</h2><p>Team and Enterprise customers can sign a countersigned copy from Settings, Billing. Or write to <a href="mailto:legal@auspeo.dev">legal@auspeo.dev</a>.</p>
+</ArticleLayout>

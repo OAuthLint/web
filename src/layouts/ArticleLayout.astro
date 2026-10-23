@@ -1,0 +1,46 @@
+---
+import { ChevronRight } from '@lucide/astro';
+import CopyButton from '../components/CopyButton.astro';
+import SiteChrome from '../components/SiteChrome.astro';
+import Unavailable from '../components/Unavailable.astro';
+import { SHOW_CLOUD } from '../config';
+import Base from './Base.astro';
+interface Props {
+  title: string;
+  description?: string;
+  active?: string;
+  cloudOnly?: boolean;
+  notice?: string;
+  headings?: { depth?: number; slug: string; text: string }[];
+}
+const { title, description, active, cloudOnly = false, notice, headings = [] } = Astro.props;
+const toc = headings.filter((heading) => !heading.depth || heading.depth === 2);
+const available = !cloudOnly || SHOW_CLOUD;
+---
+<Base title={title + ' | OAuthLint'} description={description}>
+  <SiteChrome active={active}>
+    {available ? <main id="main" class="container article-grid">
+      <div class="article-main"><div class="breadcrumb" data-pagefind-ignore><a href="/">OAuthLint</a><ChevronRight size={12} aria-hidden="true" /><span>{title}</span></div>
+        {notice && <p class="note" data-pagefind-ignore>{notice}</p>}
+        <article class="prose" data-pagefind-body><slot /></article>
+      </div>
+      {toc.length > 0 && <aside class="article-toc docs-toc"><h2>On this page</h2><nav aria-label="On this page">{toc.map((heading) => <a href={'#' + heading.slug}>{heading.text}</a>)}</nav></aside>}
+      <template id="code-copy-template"><CopyButton /></template>
+    </main> : <Unavailable />}
+  </SiteChrome>
+</Base>
+<script>import '../scripts/docs';</script>
+<style>
+  .article-grid { display: grid; grid-template-columns: minmax(0, 800px) 200px; gap: 80px; padding-top: 44px; justify-content: center; }
+  .article-main { min-width: 0; }
+  .article-toc { align-self: start; position: sticky; top: 108px; border-left: 1px solid var(--ol-border); padding-left: 20px; }
+  .article-toc h2 { font: 600 12px var(--ol-font-ui); margin-bottom: 18px; }
+  .article-toc nav { display: grid; gap: 14px; }
+  .article-toc a { font-size: 13px; color: var(--ol-text-muted); text-decoration: none; }
+  .article-toc a:hover, .article-toc a[aria-current] { color: var(--ol-accent); }
+  .note { margin-bottom: 28px; }
+  :global(.doc-code) { position: relative; margin: 20px 0 24px; }
+  :global(.doc-code pre) { margin: 0; padding-top: 46px; }
+  :global(.doc-code > button) { position: absolute; right: 6px; top: 4px; }
+  @media (max-width: 960px) { .article-grid { grid-template-columns: minmax(0, 780px); padding-top: 28px; } .article-toc { display: none; } }
+</style>

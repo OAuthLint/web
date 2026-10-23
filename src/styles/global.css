@@ -1,440 +1,598 @@
-/* Global base — ported verbatim from the OAuthLint design (shared <style>). */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
-html,
+html {
+  scroll-padding-top: 100px;
+  color-scheme: dark;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+}
 body {
   margin: 0;
-  padding: 0;
-  scroll-behavior: smooth;
-}
-body {
-  background: var(--ol-canvas);
+  background: var(--ol-page);
   color: var(--ol-text);
-  font-family: var(--ol-font-ui);
+  font: 16px / 1.6 var(--ol-font-ui);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
-::selection {
-  background: var(--ol-accent-700);
-  color: var(--ol-neutral-50);
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+summary,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+summary,
+select {
+  cursor: pointer;
+}
+button {
+  color: inherit;
 }
 a {
   color: inherit;
+  text-underline-offset: 4px;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+svg {
+  flex-shrink: 0;
+}
+button svg,
+a svg {
+  pointer-events: none;
+}
+[hidden] {
+  display: none !important;
 }
 :focus-visible {
   outline: 2px solid var(--ol-focus-ring);
-  outline-offset: 2px;
+  outline-offset: 4px;
 }
-
-/* Nav-link hover. The headless-rendered pages lost the design's JS-applied
-   style-hover, so restore a baseline hover here (overrides the inline color). */
-nav a[href]:hover {
-  color: var(--ol-text) !important;
+::selection {
+  background: var(--ol-accent-subtle);
+  color: var(--ol-text);
 }
-
-/* Scroll reveal — sections fade up as they enter view (wired in Base.astro).
-   Only active when JS is on (html.js) and motion is allowed, so no-JS / reduced
-   motion shows everything immediately. */
-@media (prefers-reduced-motion: no-preference) {
-  html.js section {
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.45s var(--ol-ease-out), transform 0.45s var(--ol-ease-out);
-    will-change: opacity, transform;
-  }
-  html.js section.is-visible {
-    opacity: 1;
-    transform: none;
-  }
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
 }
-
-/* Hero terminal: blinking caret on the typed command (the scan animation itself
-   is driven by JS in Base.astro — typing, spinner, then findings reveal). */
-[data-term-caret] {
-  animation: ol-blink 1s step-end infinite;
+h1,
+h2,
+h3 {
+  line-height: 1.25;
 }
-
-/* Baseline interactive hovers for the captured marketing pages (index/docs/
-   about/notfound). Those were headless-rendered and lost the design's
-   `style-hover` interactions; only nav-link hover was restored above. These
-   give the common controls a tasteful, fast hover consistent with the design:
-   bordered buttons/CTAs lift their border to the accent border, and the theme
-   toggle matches. Restrained (border/colour only, no transforms) and the global
-   prefers-reduced-motion block already neutralises the transition. The `.scpN`
-   marker classes come from the captured Cloud Design export. */
-.scp1,
-.scp2,
-.scp3,
-[data-theme-toggle] {
-  transition: border-color var(--ol-dur-fast) var(--ol-ease-standard), color var(--ol-dur-fast)
-    var(--ol-ease-standard), background var(--ol-dur-fast) var(--ol-ease-standard);
+h1,
+h2 {
+  font-family: var(--ol-font-display);
 }
-.scp1:hover,
-.scp2:hover,
-[data-theme-toggle]:hover {
-  border-color: var(--ol-accent-border) !important;
-  color: var(--ol-text) !important;
+code,
+pre,
+kbd {
+  font-family: var(--ol-font-mono);
 }
-.scp3:hover {
-  background: var(--ol-surface) !important;
+.container {
+  width: min(100% - 64px, 1184px);
+  margin-inline: auto;
 }
-/* The `.scp3` marker is reused for both the dark docs cards (surface hover above)
-   and the primary accent button ("Read the docs"). On the accent button the
-   surface hover turned it near-black; brighten the accent instead and keep its
-   dark foreground. Higher specificity than `.scp3:hover`, so it wins. */
-.scp3[style*="background: var(--ol-accent)"]:hover {
-  background: var(--ol-accent-hover) !important;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
-/* Standalone footer/content links (the `.scp4` export marker) warm to the
-   accent on hover, matching the design's link affordance. */
-.scp4:hover {
-  color: var(--ol-accent) !important;
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: -80px;
+  padding: 12px 20px;
+  background: var(--ol-accent);
+  color: var(--ol-accent-fg);
+  z-index: 100;
 }
-
-/* Rules-catalogue rows. The rows are clickable (`<tr onclick>`); give them a
-   subtle, readable hover (a raised surface tint — never a solid accent fill,
-   which would hide the title/description text). Reads well in dark AND light
-   because `--ol-surface-raised` flips with the theme. We also kill the mobile
-   tap-highlight so a tapped row never flashes a solid accent band that some
-   browsers keep painted when the page is restored from bfcache on Back; the
-   page script additionally clears any transient state on pageshow/pagehide.
-   Keyboard focus is unaffected — the global :focus-visible outline still shows. */
-[data-row] {
-  -webkit-tap-highlight-color: transparent;
+.skip-link:focus {
+  top: 12px;
 }
-[data-row]:hover {
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font: 650 17px var(--ol-font-display);
+  white-space: nowrap;
+}
+.brand img {
+  width: 30px;
+  height: 30px;
+}
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--ol-page);
+  border-bottom: 1px solid var(--ol-border);
+}
+.header-inner {
+  max-width: 1440px;
+  margin: auto;
+  min-height: 72px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.desktop-nav a,
+.github-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ol-text-secondary);
+  text-decoration: none;
+}
+.desktop-nav a {
+  padding-block: 24px;
+}
+.desktop-nav a[aria-current="page"] {
+  color: var(--ol-accent);
+  box-shadow: inset 0 -2px var(--ol-accent);
+}
+.desktop-nav a:hover,
+.github-link:hover {
+  color: var(--ol-accent);
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0;
+  color: var(--ol-text-secondary);
+  background: transparent;
+  text-decoration: none;
+}
+.icon-button:hover {
+  background: var(--ol-surface-raised);
+  color: var(--ol-text);
+  border-color: var(--ol-border);
+}
+.theme-toggle .moon-icon,
+[data-theme="light"] .theme-toggle .sun-icon {
+  display: none;
+}
+[data-theme="light"] .theme-toggle .moon-icon {
+  display: block;
+}
+.mobile-nav {
+  display: none;
+}
+summary {
+  list-style: none;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+.mobile-nav .close-icon,
+.mobile-nav[open] .menu-icon {
+  display: none;
+}
+.mobile-nav[open] .close-icon {
+  display: block;
+}
+.mobile-nav-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding: 12px 24px 24px;
+  background: var(--ol-page);
+  border-bottom: 1px solid var(--ol-border);
+  box-shadow: var(--ol-elev-2);
+}
+.mobile-nav-panel a {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px;
+  color: var(--ol-text-secondary);
+  text-decoration: none;
+}
+.mobile-nav-panel a[aria-current] {
+  color: var(--ol-accent);
+}
+.button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border: 1px solid var(--ol-border-strong);
+  border-radius: 4px;
+  background: var(--ol-surface);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+  text-decoration: none;
+  transition: background-color 140ms, border-color 140ms;
+}
+.button:hover {
+  border-color: var(--ol-accent);
   background: var(--ol-surface-raised);
 }
-
-@keyframes ol-blink {
-  0%,
-  49% {
-    opacity: 1;
+.button-primary {
+  background: var(--ol-accent);
+  border-color: var(--ol-accent);
+  color: var(--ol-accent-fg);
+}
+.button-primary:hover {
+  background: var(--ol-accent-hover);
+  border-color: var(--ol-accent-hover);
+}
+.button:disabled,
+.icon-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ol-accent);
+  text-decoration: none;
+  font-weight: 550;
+}
+.text-link:hover {
+  text-decoration: underline;
+}
+.copy-button .copied-icon,
+.copy-button[data-copied] .copy-icon {
+  display: none;
+}
+.copy-button[data-copied] .copied-icon {
+  display: block;
+  color: var(--ol-sev-pass);
+}
+.site-footer {
+  margin-top: 80px;
+  border-top: 1px solid var(--ol-border);
+  background: var(--ol-canvas);
+}
+.footer-main {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 36px;
+  padding-block: 52px;
+}
+.footer-main > div p {
+  margin: 16px 0;
+  color: var(--ol-text-muted);
+  font-size: 14px;
+}
+.footer-main h2 {
+  font: 600 14px var(--ol-font-ui);
+  margin: 4px 0 16px;
+}
+.footer-main ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.footer-main li a {
+  font-size: 14px;
+  text-decoration: none;
+  color: var(--ol-text-secondary);
+}
+.footer-main li a:hover {
+  color: var(--ol-accent);
+}
+.footer-bottom {
+  border-top: 1px solid var(--ol-border);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-block: 20px;
+  font-size: 12px;
+  color: var(--ol-text-muted);
+}
+.footer-bottom nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.footer-bottom a {
+  text-decoration: none;
+}
+.preview-banner {
+  text-align: center;
+  padding: 10px 24px;
+  font-size: 14px;
+  background: var(--ol-sev-medium-bg);
+  color: var(--ol-text);
+}
+.page-heading {
+  padding-block: 52px 32px;
+}
+.page-heading h1 {
+  font-size: 36px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+.page-heading p {
+  color: var(--ol-text-secondary);
+  max-width: 64ch;
+  margin-bottom: 0;
+  font-size: 18px;
+}
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ol-text-muted);
+  margin-bottom: 24px;
+}
+.breadcrumb a {
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  color: var(--ol-accent);
+}
+.eyebrow {
+  font-size: 13px;
+  color: var(--ol-text-muted);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+.table-scroll {
+  max-width: 100%;
+  overflow: auto;
+}
+.prose {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--ol-text-secondary);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.prose h1 {
+  color: var(--ol-text);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 20px;
+}
+.prose h2 {
+  color: var(--ol-text);
+  font-size: 23px;
+  font-weight: 600;
+  margin: 44px 0 16px;
+  scroll-margin-top: 100px;
+}
+.prose h3 {
+  color: var(--ol-text);
+  font-size: 18px;
+  margin: 28px 0 12px;
+}
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 20px;
+}
+.prose li {
+  margin-block: 6px;
+}
+.prose ul,
+.prose ol {
+  padding-left: 24px;
+}
+.prose a {
+  color: var(--ol-accent);
+}
+.prose strong {
+  color: var(--ol-text);
+  font-weight: 600;
+}
+.prose :not(pre) > code {
+  font-size: .82em;
+  background: var(--ol-surface-raised);
+  color: var(--ol-text);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.prose pre {
+  margin: 20px 0 24px;
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.9;
+  border: 1px solid var(--ol-border);
+  border-radius: 4px;
+  background: var(--ol-code-bg);
+  color: var(--ol-text);
+}
+.prose pre code {
+  font-size: inherit;
+}
+.prose blockquote {
+  border-left: 3px solid var(--ol-accent);
+  padding: 16px 20px;
+  margin: 24px 0;
+  background: var(--ol-surface);
+}
+.prose blockquote p:last-child {
+  margin-bottom: 0;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+.prose th,
+.prose td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ol-border);
+  vertical-align: top;
+}
+.prose th {
+  font-weight: 600;
+  color: var(--ol-text);
+  background: var(--ol-surface);
+}
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--ol-border);
+  margin: 36px 0;
+}
+.prose img {
+  border: 1px solid var(--ol-border);
+  border-radius: 4px;
+}
+.prose pre.astro-code,
+.prose .astro-code span,
+.code-content .shiki,
+.code-content .shiki span {
+  color: var(--shiki-dark);
+  background: transparent;
+}
+[data-theme="light"] .prose pre.astro-code,
+[data-theme="light"] .prose .astro-code span,
+[data-theme="light"] .code-content .shiki,
+[data-theme="light"] .code-content .shiki span {
+  color: var(--shiki-light);
+}
+.prose pre.astro-code {
+  background: var(--ol-code-bg);
+}
+.note {
+  padding: 16px 20px;
+  border-left: 3px solid var(--ol-accent);
+  background: var(--ol-surface);
+  font-size: 14px;
+  color: var(--ol-text-secondary);
+}
+.note p:last-child {
+  margin-bottom: 0;
+}
+@media (max-width: 1020px) {
+  .header-inner {
+    gap: 28px;
   }
-  50%,
-  100% {
-    opacity: 0;
+  .desktop-nav {
+    gap: 18px;
   }
 }
-@keyframes ol-sweep {
-  0% {
-    transform: translateY(-110%);
+@media (max-width: 800px) {
+  .desktop-nav {
+    display: none;
   }
-  100% {
-    transform: translateY(560%);
+  .mobile-nav {
+    display: block;
+  }
+  .header-inner {
+    padding-inline: 20px;
+    min-height: 64px;
+  }
+  .container {
+    width: min(100% - 40px, 1184px);
+  }
+  .footer-main {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+  }
+  .footer-main > div {
+    grid-column: 1 / -1;
+  }
+  .page-heading {
+    padding-block: 36px 24px;
+  }
+  .page-heading h1 {
+    font-size: 30px;
   }
 }
-@keyframes ol-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+@media (max-width: 480px) {
+  .header-actions {
+    gap: 2px;
   }
-  to {
-    opacity: 1;
-    transform: none;
+  .github-link {
+    display: none;
+  }
+  .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .prose h1 {
+    font-size: 28px;
+  }
+  .prose h2 {
+    font-size: 21px;
+  }
+  .prose pre {
+    padding: 16px;
+    font-size: 11px;
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: .001ms !important;
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important;
-  }
-}
-
-@media (max-width: 920px) {
-  [data-hero-grid],
-  [data-proofgrid] {
-    grid-template-columns: 1fr !important;
-  }
-  [data-proofcell] {
-    border-right: none !important;
-    border-bottom: 1px solid var(--ol-border) !important;
-  }
-  [data-findgrid],
-  [data-howgrid],
-  [data-whygrid],
-  [data-intgrid] {
-    grid-template-columns: 1fr !important;
-  }
-  [data-howcell],
-  [data-whycell],
-  [data-intcell] {
-    border-right: none !important;
-    border-bottom: 1px solid var(--ol-border) !important;
-  }
-  [data-howcell]:last-child,
-  [data-whycell]:last-child,
-  [data-intcell]:last-child {
-    border-bottom: none !important;
-  }
-  /* The finding cards are `display:grid; grid-template-columns:3px 1fr`. A `1fr`
-     track is min-width:auto, so the inner nowrap code row (overflow-x:auto) blows
-     the card past the viewport. Constrain the content track so the code row's own
-     horizontal scroll engages instead of widening the page. */
-  [data-findgrid] > article {
-    grid-template-columns: 3px minmax(0, 1fr) !important;
-  }
-}
-
-/* about.html "three principles" row stacks on phones. */
-@media (max-width: 640px) {
-  [data-prinrow] {
-    grid-template-columns: 1fr !important;
-  }
-  [data-prinrow] > div {
-    border-right: none !important;
-    border-bottom: 1px solid var(--ol-border) !important;
-  }
-  [data-prinrow] > div:last-child {
-    border-bottom: none !important;
-  }
-}
-
-@media (max-width: 560px) {
-  [data-statgrid] {
-    grid-template-columns: 1fr 1fr !important;
-  }
-  [data-statcell]:nth-child(2) {
-    border-right: none !important;
-  }
-  [data-statcell] {
-    border-bottom: 1px solid var(--ol-border) !important;
-  }
-}
-
-/* ---------------------------------------------------------------------------
-   Mobile navigation
-   --------------------------------------------------------------------------
-   Desktop-first: the hamburger button is hidden and the nav links sit inline.
-   Below 920px the inline link row collapses into a disclosure panel toggled by
-   an accessible hamburger button ([data-nav-toggle] / [data-navlinks]). The
-   button is injected into every nav variant (SiteChrome + the captured index/
-   about partials); the notfound nav has no links so it is unaffected.
-
-   The panel is positioned absolutely under the sticky bar so opening it never
-   reflows the page. Wiring (aria-expanded, click-outside, Escape) lives in
-   Base.astro so it runs on the set:html partials too. */
-[data-nav-toggle] {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  background: var(--ol-surface);
-  border: 1px solid var(--ol-border-strong);
-  color: var(--ol-text-secondary);
-  cursor: pointer;
-  transition: border-color var(--ol-dur-fast) var(--ol-ease-standard);
-}
-[data-nav-toggle]:hover {
-  border-color: var(--ol-accent-border);
-  color: var(--ol-text);
-}
-[data-nav-toggle] svg {
-  display: block;
-}
-
-@media (max-width: 920px) {
-  /* Hamburger appears only when JS can drive it; no-JS keeps links visible. */
-  html.js [data-nav-toggle] {
-    display: inline-flex;
-  }
-  /* Tighter nav gutters on phones so the logo + hamburger + theme toggle +
-     GitHub control all fit at 375px without horizontal overflow. */
-  nav {
-    padding-left: var(--ol-space-4) !important;
-    padding-right: var(--ol-space-4) !important;
-    gap: var(--ol-space-3) !important;
-  }
-  /* The link row becomes a dropdown panel anchored under the sticky nav. */
-  [data-navlinks] {
-    position: absolute;
-    top: 56px;
-    right: var(--ol-space-4);
-    left: var(--ol-space-4);
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 0 !important;
-    padding: var(--ol-space-2);
-    background: var(--ol-canvas);
-    border: 1px solid var(--ol-border-strong);
-    box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.5);
-    z-index: 60;
-  }
-  /* With JS the panel is closed by default and opens when JS adds `.open`.
-     With no JS there is no toggle, so the links stay visible (stacked). */
-  html.js [data-navlinks] {
-    display: none !important;
-  }
-  html.js [data-navlinks].open {
-    display: flex !important;
-  }
-  [data-navlinks] > a {
-    display: block;
-    padding: 12px 14px !important;
-    font-size: 15px !important;
-    min-height: 44px;
-    line-height: 20px;
-    border-bottom: 1px solid var(--ol-border-subtle);
-  }
-  [data-navlinks] > a:last-child {
-    border-bottom: none;
-  }
-  [data-navlinks] > a:hover {
-    background: var(--ol-surface);
+    transition-duration: .01ms !important;
   }
 }
 @media print {
-  nav,
-  [data-sweep] {
+  .site-header,
+  .site-footer,
+  .skip-link,
+  [data-announce],
+  .icon-button,
+  .preview-banner {
     display: none !important;
   }
-  body,
-  [data-bg] {
-    background: #fff !important;
-    color: #000 !important;
+  body {
+    background: white;
+    color: black;
   }
-}
-
-/* Fenced markdown code blocks are highlighted at build time with a dual Shiki
-   theme (see astro.config.mjs, defaultColor:false). The site is dark-first, so
-   default to the dark palette and swap to the light palette under
-   [data-theme="light"]. Scoped under .prose and using pre.astro-code so these
-   beat the generic `.prose pre` / `.prose pre code` rules in the doc layouts;
-   without this, light-mode blocks rendered dark with faint, unreadable text. */
-.prose pre.astro-code,
-.prose .astro-code span {
-  background-color: var(--shiki-dark-bg);
-  color: var(--shiki-dark);
-}
-.prose pre.astro-code {
-  border: 1px solid var(--ol-code-border);
-}
-:root[data-theme="light"] .prose pre.astro-code,
-:root[data-theme="light"] .prose .astro-code span {
-  background-color: var(--shiki-light-bg);
-  color: var(--shiki-light);
-}
-
-/* Landing dashboard preview: swap the Cloud overview screenshot with the theme
-   (a static image replaces the design canvas's live iframe on the marketing site). */
-[data-theme="light"] .ol-ov-dark {
-  display: none !important;
-}
-[data-theme="light"] .ol-ov-light {
-  display: block !important;
-}
-/* ---- Docs search (Pagefind v2 web component), themed to Tracer ---- */
-.docs-search {
-  margin: 0 0 var(--ol-space-5);
-}
-.docs-search .pf-searchbox-input-wrapper {
-  position: relative;
-}
-.docs-search .pf-searchbox-input {
-  width: 100%;
-  height: 34px;
-  box-sizing: border-box;
-  font-family: var(--ol-font-ui);
-  font-size: 13.5px;
-  color: var(--ol-text);
-  background: var(--ol-surface);
-  border: 1px solid var(--ol-border-strong);
-  border-radius: var(--ol-radius-sm);
-  padding: 0 10px;
-  transition: border-color var(--ol-dur-fast) var(--ol-ease-standard);
-}
-.docs-search .pf-searchbox-input:focus-visible {
-  outline: none;
-  border-color: var(--ol-accent-border);
-}
-.docs-search .pf-searchbox-placeholder,
-.docs-search .pf-searchbox-input::placeholder {
-  color: var(--ol-text-faint);
-}
-/* Results dropdown */
-.docs-search .pf-searchbox-dropdown {
-  background: var(--ol-surface);
-  border: 1px solid var(--ol-border);
-  border-radius: var(--ol-radius-md);
-  box-shadow: var(--ol-elev-3);
-}
-.docs-search .pf-searchbox-result {
-  border-top: 1px solid var(--ol-border-subtle);
-}
-.docs-search .pf-searchbox-result-title,
-.docs-search .pf-searchbox-result a {
-  color: var(--ol-text);
-  font-family: var(--ol-font-ui);
-}
-.docs-search .pf-searchbox-result-excerpt {
-  color: var(--ol-text-muted);
-}
-.docs-search mark {
-  background: var(--ol-accent-subtle);
-  color: var(--ol-accent);
-}
-.docs-search .pf-searchbox-footer,
-.docs-search .pf-searchbox-status,
-.docs-search .pf-searchbox-footer-hint {
-  color: var(--ol-text-faint);
-  font-family: var(--ol-font-ui);
-  font-size: 12px;
-}
-.docs-search .pf-searchbox-footer-key,
-.docs-search .pf-trigger-key {
-  background: var(--ol-surface-raised);
-  border: 1px solid var(--ol-border);
-  border-radius: var(--ol-radius-xs);
-  color: var(--ol-text-secondary);
-}
-
-/* Pagefind v2 injects its own light-only styles at runtime; force the Tracer
-   theme tokens so the docs search follows dark/light. */
-.docs-search .pf-searchbox-input {
-  background: var(--ol-surface) !important;
-  color: var(--ol-text) !important;
-  border: 1px solid var(--ol-border-strong) !important;
-}
-.docs-search .pf-searchbox-input::placeholder,
-.docs-search .pf-searchbox-placeholder {
-  color: var(--ol-text-faint) !important;
-}
-.docs-search .pf-searchbox-dropdown,
-.docs-search .pf-searchbox-results {
-  background: var(--ol-surface) !important;
-  border-color: var(--ol-border) !important;
-  color: var(--ol-text) !important;
-}
-.docs-search .pf-searchbox-result {
-  border-color: var(--ol-border-subtle) !important;
-}
-.docs-search .pf-searchbox-result-title,
-.docs-search .pf-searchbox-result a {
-  color: var(--ol-text) !important;
-}
-.docs-search .pf-searchbox-result-excerpt,
-.docs-search .pf-searchbox-status,
-.docs-search .pf-searchbox-footer,
-.docs-search .pf-searchbox-footer-hint {
-  color: var(--ol-text-muted) !important;
-}
-.docs-search .pf-searchbox-footer-key,
-.docs-search .pf-trigger-key,
-.docs-search .pf-searchbox-loading {
-  background: var(--ol-surface-raised) !important;
-  border-color: var(--ol-border) !important;
-  color: var(--ol-text-secondary) !important;
-}
-.docs-search mark {
-  background: var(--ol-accent-subtle) !important;
-  color: var(--ol-accent) !important;
 }

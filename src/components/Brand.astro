@@ -1,0 +1,10 @@
+---
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+---
+<a class="brand" href="/" aria-label="OAuthLint home">
+  <img src="/logo.svg" width="30" height="30" alt="" />
+  {!compact && <span>OAuthLint</span>}
+</a>

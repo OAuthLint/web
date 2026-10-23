@@ -8,6 +8,10 @@
  * place — nothing else needs to change.
  */
 export const PLATFORM_LIVE = false;
+export const CLOUD_PREVIEW = process.env.OAUTHLINT_PREVIEW === 'cloud';
+export const SHOW_CLOUD = PLATFORM_LIVE || CLOUD_PREVIEW;
+export const GITHUB_URL = 'https://github.com/OAuthLint/oauthlint';
+export const WEB_GITHUB_URL = 'https://github.com/OAuthLint/web';
 
 /**
  * True for a route that only makes sense once OAuthLint Cloud has shipped.
