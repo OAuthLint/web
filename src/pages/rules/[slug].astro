@@ -20,7 +20,25 @@ const { rule } = Astro.props;
 const title = ruleTitle(rule);
 const category = topicSlug(rule.id);
 const topic = topicLabel(category);
-const isTaint = rule.mode === 'taint';
+const TAINT_RULE_IDS = new Set<string>([
+  'auth.flow.open-redirect',
+  'auth.flow.secret-in-response',
+  'auth.flow.ssrf',
+  'auth.go.flow.open-redirect',
+  'auth.go.flow.secret-in-response',
+  'auth.go.flow.ssrf',
+  'auth.oauth.open-redirect-callback',
+  'auth.py.flow.open-redirect',
+  'auth.py.flow.secret-in-response',
+  'auth.py.flow.ssrf',
+]);
+const isTaint = TAINT_RULE_IDS.has(rule.id);
+const PREV: Record<'HIGH' | 'MEDIUM' | 'LOW', { label: string; color: string }> = {
+  HIGH: { label: 'HIGH', color: 'var(--ol-sev-critical)' },
+  MEDIUM: { label: 'MED', color: 'var(--ol-text-secondary)' },
+  LOW: { label: 'LOW', color: 'var(--ol-text-muted)' },
+};
+const prev = PREV[rule.llmPrevalence];
 const { body } = titleAndBody(rule.message);
 const cwe = rule.cwe ? cweUrl(rule.cwe) : undefined;
 const owasp = rule.owasp ? owaspUrl(rule.owasp) : undefined;
@@ -49,7 +67,7 @@ const article = {
     <main id="main" class="container rule-detail" data-pagefind-body>
       <nav class="breadcrumb" aria-label="Breadcrumb" data-pagefind-ignore><a href="/rules">Rules</a><ChevronRight size={12} aria-hidden="true" /><a href={'/rules?category=' + category}>{topic}</a><ChevronRight size={12} aria-hidden="true" /><span>{rule.ruleId}</span></nav>
       <header class="rule-heading">
-        <div class="rule-tags"><SeverityBadge severity={rule.severity} /><span>{rule.languages.map(languageLabel).join(' / ')}</span>{isTaint && <span class="dataflow-tag"><GitBranch size={14} aria-hidden="true" />Dataflow analysis</span>}</div>
+        <div class="rule-tags"><SeverityBadge severity={rule.severity} /><span>{rule.languages.map(languageLabel).join(' / ')}</span><span title="How often AI coding tools generate this anti-pattern by default" class="ai-prevalence-badge">AI: {prev.label}</span>{isTaint && <span class="dataflow-tag" title="Dataflow rule. Traces untrusted/sensitive data from source to a dangerous sink."><GitBranch size={14} aria-hidden="true" />DATAFLOW</span>}</div>
         <h1>{title}</h1>
         <div class="rule-id"><code>{rule.id}</code><CopyButton value={rule.id} label="Copy rule ID" /></div>
       </header>

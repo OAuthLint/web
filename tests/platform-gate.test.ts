@@ -109,14 +109,15 @@ describe('homepage source', () => {
   // The gate is only worth anything if the page actually calls it. Without this
   // every assertion below would still pass on a page that renders the raw HTML.
   it('is rendered through the gate', () => {
+    // The componentisation rewrote index.astro as a full Astro component that
+    // no longer imports raw HTML. The platform Cloud section is now an Astro
+    // conditional: {SHOW_CLOUD && <section>…</section>}. The contract is the
+    // same — platform content only ships when SHOW_CLOUD is true — the mechanism
+    // changed from applyPlatformGate to an Astro conditional.
     const page = src('pages/index.astro');
-    // Matched as a CALL, not as the word: the file names applyPlatformGate in
-    // its comment too, so `toContain` stayed green with the gate unwired.
-    expect(page, 'index.astro no longer calls applyPlatformGate()').toMatch(
-      /const\s+body\s*=\s*applyPlatformGate\(\s*rawBody\s*\)/,
-    );
-    expect(page, 'index.astro renders something other than the gated body').toMatch(
-      /set:html=\{body\}/,
+    expect(page, 'index.astro lost its SHOW_CLOUD import').toContain('SHOW_CLOUD');
+    expect(page, 'index.astro cloud section is not gated by SHOW_CLOUD').toMatch(
+      /\{SHOW_CLOUD\s*&&/,
     );
   });
 

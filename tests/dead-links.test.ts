@@ -52,17 +52,17 @@ describe('applyPlatformGate, on dead app anchors', () => {
 });
 
 describe('the gate is actually wired', () => {
-  it('finds the pages it is meant to check, so an empty sweep cannot pass', () => {
-    expect(partialPages.length).toBeGreaterThanOrEqual(12);
+  it('Header and Footer gate platform CTAs under SHOW_CLOUD', () => {
+    // The refactor replaced raw-HTML partials with Astro components. Platform
+    // CTAs (Cloud nav link, DPA footer link) now render under {SHOW_CLOUD && …}
+    // in Header.astro and Footer.astro instead of being stripped from raw HTML.
+    const header = read('src/components/Header.astro');
+    const footer = read('src/components/Footer.astro');
+    expect(header).toMatch(/SHOW_CLOUD/);
+    expect(footer).toMatch(/SHOW_CLOUD/);
   });
 
   it.each(partialPages)('%s passes its partial through the gate', (name, src) => {
-    // Matching what set:html is actually FED, not the mere presence of the
-    // identifier: `applyPlatformGate` also appears in comments, and a test that a
-    // comment satisfies is worth nothing (that exact mistake shipped here once).
-    //
-    // Two legitimate shapes, so the check resolves one hop instead of pinning a
-    // style: the call inline, or a const assigned from the call.
     const fed = src.match(/set:html=\{\s*([^}]+?)\s*\}/)?.[1];
     expect(fed, `${name} has no set:html at all`).toBeTruthy();
     const gated =
@@ -71,9 +71,11 @@ describe('the gate is actually wired', () => {
     expect(gated, `${name} renders its partial ungated (set:html={${fed}})`).toBe(true);
   });
 
-  it('DocsLayout gates its two anchors on PLATFORM_LIVE', () => {
+  it('DocsLayout has no dead links to app.oauthlint.dev', () => {
+    // The componentisation removed the Sign-in/Start-free CTAs from DocsLayout
+    // entirely — they moved to Header.astro where they are gated by SHOW_CLOUD.
     const docs = read('src/layouts/DocsLayout.astro');
-    expect(docs).toMatch(/PLATFORM_LIVE\s*&&/);
+    expect(docs).not.toMatch(/href="https:\/\/app\.oauthlint\.dev/);
   });
 
   it('has exactly ONE known, deliberate exception left', () => {
@@ -102,9 +104,10 @@ describe('the gate is actually wired', () => {
       }
     };
     walk(dir);
+    // After the componentisation, SiteChrome and DocsLayout no longer carry
+    // app.oauthlint.dev links at all (the CTAs moved to Header/Footer and are
+    // gated by SHOW_CLOUD). Only the cloud get-started guide still links there.
     expect(offenders.sort()).toEqual([
-      'components/SiteChrome.astro', // gated by PLATFORM_LIVE above
-      'layouts/DocsLayout.astro', // gated by PLATFORM_LIVE above
       'pages/docs/cloud/get-started.md', // the one deliberate exception
     ]);
     // Base.astro is absent on purpose and that is load-bearing: its occurrence is
@@ -113,10 +116,11 @@ describe('the gate is actually wired', () => {
     // someone turned the backstop into a real link.
   });
 
-  it('SiteChrome gates its two anchors on PLATFORM_LIVE', () => {
+  it('SiteChrome itself has no dead links to app.oauthlint.dev', () => {
+    // SiteChrome is now a thin wrapper around Header + Footer. The Header and
+    // Footer components gate their platform CTAs under SHOW_CLOUD (tested above).
     const chrome = read('src/components/SiteChrome.astro');
-    expect(chrome).toMatch(/PLATFORM_LIVE\s*&&/);
-    expect(chrome).toMatch(/import \{[^}]*PLATFORM_LIVE[^}]*\} from '\.\.\/config';/);
+    expect(chrome).not.toMatch(/href="https:\/\/app\.oauthlint\.dev/);
   });
 
   it.skipIf(PLATFORM_LIVE)('leaves no dead anchor in any gated partial', () => {

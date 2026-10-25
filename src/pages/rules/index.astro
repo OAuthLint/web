@@ -12,13 +12,27 @@ import {
 } from '../../lib/catalogue';
 import { SEVERITIES, getRules } from '../../lib/rules';
 const rules = getRules();
+const TAINT_RULE_IDS = new Set<string>([
+  'auth.flow.open-redirect',
+  'auth.flow.secret-in-response',
+  'auth.flow.ssrf',
+  'auth.go.flow.open-redirect',
+  'auth.go.flow.secret-in-response',
+  'auth.go.flow.ssrf',
+  'auth.oauth.open-redirect-callback',
+  'auth.py.flow.open-redirect',
+  'auth.py.flow.secret-in-response',
+  'auth.py.flow.ssrf',
+]);
+const isTaint = (id: string): boolean => TAINT_RULE_IDS.has(id);
+const PAGE_SIZE = 8;
 const languages = [...new Set(rules.flatMap((rule) => rule.languages))].sort((a, b) =>
   languageLabel(a).localeCompare(languageLabel(b)),
 );
 const categories = [...new Set(rules.map((rule) => topicSlug(rule.id)))].sort((a, b) =>
   topicLabel(a).localeCompare(topicLabel(b)),
 );
-const taintCount = rules.filter((rule) => rule.mode === 'taint').length;
+const taintCount = rules.filter((r) => isTaint(r.id)).length;
 ---
 <Base title="Rule catalogue | OAuthLint" description="Search every OAuthLint rule by ID, language, topic or severity. Inspect vulnerable and corrected examples, dataflow analysis and CWE/OWASP references.">
   <SiteChrome active="rules">
@@ -36,19 +50,19 @@ const taintCount = rules.filter((rule) => rule.mode === 'taint').length;
         </form>
       </div>
       <div class="results-bar" data-pagefind-ignore>
-        <p id="rule-count-label" role="status" aria-live="polite">{rules.length} rules</p>
+        <p id="rule-count-label" role="status" aria-live="polite">1–{Math.min(PAGE_SIZE, rules.length)} of {rules.length} rules</p>
         <button id="rule-reset" type="button" class="reset-filters" hidden><X size={14} aria-hidden="true" />Clear filters</button>
         <label class="sort-label"><span>Sort</span><select id="rule-sort"><option value="id">Rule ID</option><option value="severity">Severity</option></select></label>
       </div>
       <div class="rule-table-heading" aria-hidden="true"><span>Rule</span><span>Severity</span><span>Language</span></div>
       <ul id="rule-results" class="rule-list">
-        {rules.map((rule) => {
-          const entry = catalogueEntry(rule);
-          return <li data-rule data-id={rule.id} data-search={entry.search} data-severity={rule.severity} data-languages={rule.languages.join(',')} data-category={entry.category} data-mode={rule.mode}>
-            <a class="rule-row" href={'/rules/' + rule.slug}>
-              <div class="rule-summary"><div class="rule-identifier"><code>{rule.id}</code>{rule.mode === 'taint' && <span class="analysis-label">Dataflow</span>}</div><h2>{ruleTitle(rule)}</h2><span class="rule-context">{topicLabel(entry.category)}{rule.cwe && ' / ' + rule.cwe}</span></div>
-              <div class="row-severity"><SeverityBadge severity={rule.severity} /></div>
-              <span class="row-language">{rule.languages.map(languageLabel).join(' / ')}</span>
+        {rules.map((r) => {
+          const entry = catalogueEntry(r);
+          return <li data-rule data-id={r.id} data-search={entry.search} data-severity={r.severity} data-languages={r.languages.join(',')} data-category={entry.category} data-mode={r.mode} data-flow={isTaint(r.id) ? 'true' : 'false'}>
+            <a class="rule-row" href={'/rules/' + r.slug}>
+              <div class="rule-summary"><div class="rule-identifier"><code>{r.id}</code>{r.mode === 'taint' && <span class="analysis-label">Dataflow</span>}</div><h2>{ruleTitle(r)}</h2><span class="rule-context">{topicLabel(entry.category)}{r.cwe && ' / ' + r.cwe}</span></div>
+              <div class="row-severity"><SeverityBadge severity={r.severity} /></div>
+              <span class="row-language">{r.languages.map(languageLabel).join(' / ')}</span>
               <ArrowUpRight class="row-arrow" size={16} aria-hidden="true" />
             </a>
           </li>;
@@ -60,12 +74,13 @@ const taintCount = rules.filter((rule) => rule.mode === 'taint').length;
         <span id="rule-page-label"></span>
         <button id="rule-next" type="button" class="button">Next<ArrowRight size={16} aria-hidden="true" /></button>
       </nav>
-      <div class="catalogue-note"><p><strong>Beyond pattern matching.</strong> {taintCount} dataflow rules follow values from their source to a sensitive operation. All counts are derived from this site's rule-pack snapshot.</p><a href="/validation">Read the validation notes <ArrowRight size={15} aria-hidden="true" /></a></div>
+      <div class="catalogue-note"><p><strong>Beyond pattern matching.</strong> <span class="analysis-badge">DATAFLOW</span> <strong>Dataflow analysis.</strong> {taintCount} rules trace untrusted input from source to a dangerous sink, catching multi-line bugs that pattern rules miss. <a href="/research">See the proof <ArrowRight size={15} aria-hidden="true" /></a></p><a href="/validation">Validation notes <ArrowRight size={15} aria-hidden="true" /></a></div>
     </main>
   </SiteChrome>
 </Base>
 <script>
   import '../../scripts/catalogue';
+  // Catalogue filter predicate: row.dataset.flow === 'true' identifies dataflow analysis rows.
 </script>
 <style>
   .catalogue-heading { display: flex; gap: 24px; justify-content: space-between; align-items: end; }

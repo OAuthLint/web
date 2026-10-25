@@ -1,7 +1,7 @@
 import { stripInline } from './inline';
 import type { RuleView, Severity } from './rules';
 
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = 8;
 export const TOPIC_LABELS: Record<string, string> = {
   jwt: 'JWT',
   oauth: 'OAuth',
