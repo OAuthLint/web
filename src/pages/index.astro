@@ -1,16 +1,163 @@
 ---
-import { applyPlatformGate } from '../config';
-import rawBody from '../html/index.html?raw';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Braces,
+  GitPullRequest,
+  LockKeyhole,
+  Terminal,
+} from '@lucide/astro';
+import CopyButton from '../components/CopyButton.astro';
+import ScanDemo from '../components/ScanDemo.astro';
+import SiteChrome from '../components/SiteChrome.astro';
+import { SHOW_CLOUD } from '../config';
 import Base from '../layouts/Base.astro';
-
-// The hosted platform has not shipped. Three blocks of this page described it as
-// if it had - the "Every repository, one view." dashboard screenshot, the
-// "Run it yourself, or let us run it." plan cards, and the signup sub-headline
-// under the closing call to action - so they are stripped from the build rather
-// than hidden with CSS. See applyPlatformGate in src/config.ts for why, and flip
-// PLATFORM_LIVE there to bring all of them back at once.
-const body = applyPlatformGate(rawBody);
+import { getRules } from '../lib/rules';
+const rules = getRules();
+const taintCount = rules.filter((rule) => rule.mode === 'taint').length;
+const integrations = [
+  {
+    icon: Terminal,
+    name: 'Terminal',
+    detail: 'Scan locally. Keep control of your code.',
+    href: '/docs/cli',
+    label: 'Use the CLI',
+    command: 'npx oauthlint scan ./src',
+  },
+  {
+    icon: Braces,
+    name: 'Your editor',
+    detail: 'Catch mistakes while the code is still open.',
+    href: '/docs/vscode',
+    label: 'Install the extension',
+    command: 'VS Code / Cursor / Windsurf',
+  },
+  {
+    icon: GitPullRequest,
+    name: 'Pull requests',
+    detail: 'Bring findings into the review, with SARIF.',
+    href: '/docs/github-action',
+    label: 'Add to CI',
+    command: 'OAuthLint/oauthlint@main',
+  },
+];
 ---
-<Base title="OAuthLint: catch the auth bugs AI assistants ship" description="A static-analysis linter for the OAuth, OIDC, JWT, MCP, session and CORS anti-patterns AI coding tools generate. Hand-curated rules, zero false positives on clean auth libraries. Open source, MIT.">
-  <Fragment set:html={body} />
+<Base title="OAuthLint | Authentication security for your code" description="Open-source OAuth, JWT, session and MCP security checks. Scan locally, inspect actionable findings and bring authentication checks into your editor and CI.">
+  <SiteChrome>
+    <main id="main" data-pagefind-body>
+      <section class="home-intro container">
+        <div class="intro-copy">
+          <p class="eyebrow"><LockKeyhole size={14} aria-hidden="true" /> Open-source authentication security</p>
+          <h1>OAuthLint</h1>
+          <p class="hero-promise">Auth bugs are subtle.{' '}<br />Your findings shouldn't be.</p>
+          <p class="hero-description">Catch OAuth, JWT, session and MCP mistakes in your code.<br class="desktop-break" /> Get the context to understand them. And the examples to fix them.</p>
+        </div>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/docs">Run your first scan <ArrowRight size={16} aria-hidden="true" /></a>
+          <div class="install-command"><Terminal size={15} aria-hidden="true" /><code>npx oauthlint scan ./src</code><CopyButton value="npx oauthlint scan ./src" label="Copy scan command" /></div>
+          <span class="install-note">Runs locally. No account required.</span>
+        </div>
+        <ScanDemo />
+      </section>
+
+      <section class="coverage-band">
+        <div class="container coverage-inner"><p><strong>{rules.length}</strong> documented rules.<br />One focused security domain.</p><div><span>OAuth &amp; OIDC</span><span>JWT</span><span>Sessions &amp; cookies</span><span>MCP</span><span>CORS &amp; TLS</span><span>Secrets</span></div><a class="text-link" href="/rules">Explore the catalogue <ArrowRight size={16} aria-hidden="true" /></a></div>
+      </section>
+
+      <section class="workflow-section container">
+        <div class="section-heading"><div><p class="eyebrow">One ruleset. Your workflow.</p><h2>Start where you write code.</h2></div><p>Use OAuthLint on your own machine, in your editor, or as part of every review. Adopt it one repository at a time.</p></div>
+        <div class="integration-grid">{integrations.map(({ icon: Icon, ...item }) => <article><Icon size={25} stroke-width={1.5} aria-hidden="true" /><h3>{item.name}</h3><p>{item.detail}</p><div class="integration-command"><code>{item.command}</code></div><a class="text-link" href={item.href}>{item.label}<ArrowRight size={15} aria-hidden="true" /></a></article>)}</div>
+        <div class="mcp-row"><span>Working with an AI coding assistant?</span><a href="/docs/mcp">Add OAuthLint to its toolchain <ArrowUpRight size={15} aria-hidden="true" /></a></div>
+      </section>
+
+      <section class="signal-section">
+        <div class="container signal-grid">
+          <div><p class="eyebrow">Inspect the signal.</p><h2>A finding should explain itself.</h2><p>Security advice is only useful when you can act on it. Every rule has a stable ID, code examples and references you can inspect.</p><a class="text-link" href="/rules/jwt-jose-no-audience">Open a rule <ArrowRight size={16} aria-hidden="true" /></a></div>
+          <dl class="signal-list"><div><dt>Follow the data</dt><dd>{taintCount} dataflow rules trace input to sensitive operations, beyond a single-line pattern.</dd></div><div><dt>Understand the trade-offs</dt><dd>Review the rule's CWE, OWASP mapping and examples before making a change.</dd></div><div><dt>Adopt at your own pace</dt><dd>Use baselines, severity thresholds and scoped suppressions to fit an existing codebase.</dd></div></dl>
+        </div>
+      </section>
+
+      <section class="trust-section container">
+        <div><p class="eyebrow">Open to inspection.</p><h2>Trust comes from the details.</h2><p>Read the rules. Review the validation methodology. Understand what a static check can and cannot tell you.</p></div>
+        <div class="trust-links"><a href="/validation"><span><strong>Validation</strong><small>Corpus, results and known limitations</small></span><ArrowUpRight size={18} aria-hidden="true" /></a><a href="/security"><span><strong>Security &amp; data</strong><small>How local scans handle your source</small></span><ArrowUpRight size={18} aria-hidden="true" /></a><a href="/docs/writing-rules"><span><strong>Contribute a rule</strong><small>Patterns, fixtures and review criteria</small></span><ArrowUpRight size={18} aria-hidden="true" /></a></div>
+      </section>
+      {SHOW_CLOUD && <section class="cloud-preview-section container"><h2>OAuthLint Cloud</h2><p>A shared workspace for repository scans, findings and team policies. Currently in preview.</p><a class="text-link" href="/cloud">Explore the Cloud preview <ArrowRight size={16} aria-hidden="true" /></a></section>}
+      <section class="closing-section container"><div><h2>Start with your next scan.</h2><p>No account. No configuration to get started.</p></div><a class="button button-primary" href="/docs">Get started <ArrowRight size={16} aria-hidden="true" /></a></section>
+    </main>
+  </SiteChrome>
 </Base>
+<style>
+  .home-intro { padding-top: 52px; }
+  .intro-copy { max-width: 850px; }
+  .intro-copy .eyebrow { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  h1 { font-size: 62px; line-height: 1.1; font-weight: 600; margin: 0 0 14px; }
+  .hero-promise { font: 500 28px/1.35 var(--ol-font-display); margin-bottom: 18px; }
+  .hero-promise br { display: none; }
+  .hero-description { font-size: 17px; line-height: 1.7; color: var(--ol-text-secondary); margin-bottom: 24px; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-bottom: 36px; }
+  .install-command { display: flex; align-items: center; gap: 12px; padding: 0 4px 0 14px; min-height: 44px; border: 1px solid var(--ol-border); background: var(--ol-surface); border-radius: 4px; min-width: 0; }
+  .install-command > svg { color: var(--ol-text-muted); }
+  .install-command code { font-size: 11px; }
+  .install-note { font-size: 12px; color: var(--ol-text-muted); }
+  .coverage-band { border-bottom: 1px solid var(--ol-border); }
+  .coverage-inner { display: grid; grid-template-columns: 240px 1fr auto; align-items: center; gap: 24px; padding-block: 32px; }
+  .coverage-inner p { margin: 0; font-size: 13px; color: var(--ol-text-secondary); }
+  .coverage-inner strong { font-size: 20px; color: var(--ol-text); font-weight: 600; }
+  .coverage-inner > div { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 13px; color: var(--ol-text-muted); }
+  .coverage-inner a { font-size: 12px; }
+  .workflow-section, .trust-section { padding-block: 80px; }
+  .section-heading { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; margin-bottom: 40px; }
+  h2 { font-size: 30px; font-weight: 550; margin-bottom: 18px; max-width: 24ch; }
+  .section-heading h2 { margin-bottom: 0; }
+  .section-heading > p, .signal-grid > div > p:not(.eyebrow), .trust-section > div > p:not(.eyebrow) { font-size: 16px; line-height: 1.75; color: var(--ol-text-secondary); max-width: 50ch; margin-bottom: 0; }
+  .integration-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+  .integration-grid article { padding-top: 28px; border-top: 1px solid var(--ol-border); min-width: 0; }
+  .integration-grid article > svg { color: var(--ol-accent); margin-bottom: 18px; }
+  .integration-grid h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .integration-grid p { font-size: 14px; color: var(--ol-text-secondary); margin-bottom: 24px; }
+  .integration-command { padding: 14px 0; border-top: 1px solid var(--ol-border-subtle); color: var(--ol-text-muted); min-height: 54px; overflow-wrap: anywhere; }
+  .integration-command code { font-size: 10px; }
+  .integration-grid .text-link { font-size: 13px; margin-top: 8px; }
+  .mcp-row { display: flex; gap: 16px; flex-wrap: wrap; padding-top: 28px; margin-top: 40px; border-top: 1px solid var(--ol-border); font-size: 14px; color: var(--ol-text-secondary); }
+  .mcp-row a { color: var(--ol-accent); text-decoration: none; display: flex; gap: 8px; align-items: center; }
+  .signal-section { background: var(--ol-canvas); border-block: 1px solid var(--ol-border); padding-block: 64px; }
+  .signal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; }
+  .signal-grid .text-link { margin-top: 28px; font-size: 14px; }
+  .signal-list { margin: 0; }
+  .signal-list > div { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--ol-border); }
+  .signal-list > div:last-child { border: 0; margin-bottom: 0; padding-bottom: 0; }
+  dt { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  dd { margin: 0; color: var(--ol-text-secondary); font-size: 14px; line-height: 1.7; max-width: 54ch; }
+  .trust-section { display: grid; grid-template-columns: 1fr 1fr; gap: 100px; }
+  .trust-links a { display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--ol-border); padding: 20px 0; text-decoration: none; }
+  .trust-links a:first-child { padding-top: 0; }
+  .trust-links strong { display: block; font-size: 16px; font-weight: 550; }
+  .trust-links small { display: block; color: var(--ol-text-muted); font-size: 13px; margin-top: 4px; }
+  .trust-links a:hover { color: var(--ol-accent); }
+  .closing-section { border-top: 1px solid var(--ol-border); padding-block: 48px 0; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .closing-section h2 { font-size: 25px; margin-bottom: 8px; }
+  .closing-section p { margin: 0; font-size: 14px; color: var(--ol-text-muted); }
+  .cloud-preview-section { border-top: 1px solid var(--ol-border); padding-block: 40px; }
+  @media (max-width: 1000px) { .coverage-inner { grid-template-columns: 210px 1fr; } .coverage-inner a { grid-column: 2; } .signal-grid, .trust-section { gap: 48px; } .install-note { display: none; } }
+  @media (max-width: 700px) {
+    .home-intro { padding-top: 32px; }
+    h1 { font-size: 44px; }
+    .hero-promise { font-size: 23px; }
+    .hero-promise br { display: block; }
+    .hero-description { font-size: 16px; }
+    .desktop-break { display: none; }
+    .hero-actions { margin-bottom: 24px; }
+    .install-command { order: 2; }
+    .coverage-inner { grid-template-columns: 1fr; gap: 18px; }
+    .coverage-inner a { grid-column: auto; }
+    .coverage-inner p br { display: none; }
+    .section-heading, .signal-grid, .trust-section { grid-template-columns: 1fr; gap: 28px; }
+    h2 { font-size: 26px; }
+    .workflow-section, .trust-section { padding-block: 48px; }
+    .integration-grid { grid-template-columns: 1fr; gap: 28px; }
+    .integration-grid p { margin-bottom: 12px; }
+    .integration-grid article { position: relative; padding-left: 44px; }
+    .integration-grid article > svg { position: absolute; left: 0; top: 28px; }
+    .closing-section { align-items: flex-start; flex-direction: column; }
+  }
+</style>

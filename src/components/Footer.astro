@@ -1,0 +1,54 @@
+---
+import { ArrowUpRight } from '@lucide/astro';
+import { GITHUB_URL, SHOW_CLOUD } from '../config';
+import Brand from './Brand.astro';
+const groups = [
+  {
+    label: 'Build',
+    links: [
+      ['Documentation', '/docs'],
+      ['Rule catalogue', '/rules'],
+      ['Editor extension', '/docs/vscode'],
+      ['GitHub Action', '/docs/github-action'],
+    ],
+  },
+  {
+    label: 'Evaluate',
+    links: [
+      ['Security', '/security'],
+      ['Validation', '/validation'],
+      ['OWASP mapping', '/owasp'],
+      ['Research', '/research'],
+    ],
+  },
+  {
+    label: 'Project',
+    links: [
+      ['About', '/about'],
+      ['Changelog', '/changelog'],
+      ['Contribute', '/docs/writing-rules'],
+      ['GitHub', GITHUB_URL],
+    ],
+  },
+  ...(SHOW_CLOUD
+    ? [
+        {
+          label: 'Cloud preview',
+          links: [
+            ['Overview', '/cloud'],
+            ['Documentation', '/docs/cloud/get-started'],
+            ['Pricing', '/pricing'],
+            ['Self-host', '/docs/self-host'],
+          ],
+        },
+      ]
+    : []),
+];
+---
+<footer class="site-footer" data-pagefind-ignore>
+  <div class="footer-main container">
+    <div><Brand /><p>Authentication security.<br />Open source. In your workflow.</p><a class="text-link" href={GITHUB_URL + '/blob/main/LICENSE'}>MIT licensed <ArrowUpRight size={14} aria-hidden="true" /></a></div>
+    {groups.map((group) => <nav aria-label={group.label}><h2>{group.label}</h2><ul>{group.links.map(([label, href]) => <li><a href={href}>{label}</a></li>)}</ul></nav>)}
+  </div>
+  <div class="footer-bottom container"><span>OAuthLint by Auspeo</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/disclosure">Responsible disclosure</a>{SHOW_CLOUD && <a href="/dpa">DPA</a>}</nav></div>
+</footer>

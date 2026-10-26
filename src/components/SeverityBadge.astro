@@ -1,0 +1,17 @@
+---
+import { CircleAlert } from '@lucide/astro';
+import type { Severity } from '../lib/rules';
+interface Props {
+  severity: Severity;
+}
+const { severity } = Astro.props;
+---
+<span class="severity-badge" data-severity={severity}><CircleAlert size={12} aria-hidden="true" />{severity[0].toUpperCase() + severity.slice(1)}</span>
+<style>
+  .severity-badge { display: inline-flex; align-items: center; gap: 5px; font: 550 12px/1.4 var(--ol-font-ui); padding: 4px 8px; border: 1px solid var(--badge-border); border-radius: 4px; color: var(--badge-ink); background: var(--badge-bg); white-space: nowrap; }
+  [data-severity="critical"] { --badge-ink: var(--ol-sev-critical); --badge-bg: var(--ol-sev-critical-bg); --badge-border: var(--ol-sev-critical-border); }
+  [data-severity="high"] { --badge-ink: var(--ol-sev-high); --badge-bg: var(--ol-sev-high-bg); --badge-border: var(--ol-sev-high-border); }
+  [data-severity="medium"] { --badge-ink: var(--ol-sev-medium); --badge-bg: var(--ol-sev-medium-bg); --badge-border: var(--ol-sev-medium-border); }
+  [data-severity="low"] { --badge-ink: var(--ol-sev-low); --badge-bg: var(--ol-sev-low-bg); --badge-border: var(--ol-sev-low-border); }
+  [data-severity="info"] { --badge-ink: var(--ol-sev-info); --badge-bg: var(--ol-sev-info-bg); --badge-border: var(--ol-sev-info-border); }
+</style>

@@ -1,0 +1,41 @@
+---
+import { Search, X } from '@lucide/astro';
+---
+<button type="button" class="search-trigger" data-search-open aria-haspopup="dialog" aria-controls="site-search" aria-label="Search documentation and rules">
+  <Search size={17} aria-hidden="true" /><span>Search</span>
+</button>
+<dialog id="site-search" aria-labelledby="search-heading">
+  <div class="search-dialog-head">
+    <h2 id="search-heading">Search documentation &amp; rules</h2>
+    <button type="button" class="icon-button" data-search-close aria-label="Close search" title="Close search"><X size={20} aria-hidden="true" /></button>
+  </div>
+  <label class="search-field"><Search size={20} aria-hidden="true" /><span class="sr-only">Search query</span><input id="site-search-input" type="search" placeholder="Search a command, rule ID, or topic..." autocomplete="off" /></label>
+  <p class="search-status" role="status" aria-live="polite" id="search-status"></p>
+  <div id="search-results" class="search-results">
+    <a href="/docs"><strong>Run your first scan</strong><span>Install, scan and understand a finding.</span></a>
+    <a href="/docs/cli"><strong>CLI reference</strong><span>Commands, flags and exit codes.</span></a>
+    <a href="/rules"><strong>Rule catalogue</strong><span>Examples and references for every rule.</span></a>
+  </div>
+</dialog>
+<script>
+  import '../scripts/search';
+</script>
+<style>
+  .search-trigger { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border: 1px solid var(--ol-border); border-radius: 4px; background: var(--ol-surface); color: var(--ol-text-muted); font-size: 13px; }
+  dialog { width: min(680px, calc(100% - 32px)); max-height: min(720px, calc(100dvh - 64px)); margin: 64px auto auto; padding: 0; border: 1px solid var(--ol-border-strong); border-radius: 8px; background: var(--ol-page); color: var(--ol-text); box-shadow: var(--ol-elev-3); }
+  dialog::backdrop { background: rgb(0 0 0 / .5); }
+  .search-dialog-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 12px 24px; border-bottom: 1px solid var(--ol-border); }
+  h2 { font: 600 16px var(--ol-font-ui); margin: 0; }
+  .search-field { display: flex; align-items: center; gap: 12px; margin: 20px 24px 0; }
+  .search-field > svg { color: var(--ol-accent); }
+  input { min-width: 0; width: 100%; height: 48px; padding: 8px 12px; border: 1px solid var(--ol-border-strong); border-radius: 4px; background: var(--ol-surface); color: var(--ol-text); font-size: 16px; }
+  input::placeholder { color: var(--ol-text-muted); }
+  .search-status { margin: 12px 24px; color: var(--ol-text-muted); font-size: 13px; min-height: 20px; }
+  .search-results { padding: 0 12px 16px; }
+  .search-results :global(a) { display: block; padding: 14px 12px; border-radius: 4px; text-decoration: none; }
+  .search-results :global(a:hover), .search-results :global(a:focus-visible) { background: var(--ol-surface-raised); }
+  .search-results :global(strong) { display: block; font-size: 15px; font-weight: 600; color: var(--ol-text); }
+  .search-results :global(span) { display: block; font-size: 13px; margin-top: 4px; color: var(--ol-text-secondary); }
+  @media (max-width: 1080px) { .search-trigger { width: 40px; height: 40px; padding: 0; justify-content: center; border-color: transparent; background: transparent; } .search-trigger span { display: none; } }
+  @media (max-width: 480px) { dialog { margin-top: 16px; max-height: calc(100dvh - 32px); } .search-dialog-head { padding-left: 16px; } .search-field { margin-inline: 16px; } h2 { font-size: 14px; } }
+</style>

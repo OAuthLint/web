@@ -81,8 +81,17 @@ describe('the two places that must consume it', () => {
   it('Base.astro emits robots from isIndexablePath, not a constant', () => {
     const base = src('src/layouts/Base.astro');
     expect(base, 'Base.astro still hard-codes index,follow').not.toMatch(/content="index,follow"/);
-    expect(base, 'Base.astro does not call isIndexablePath for robots').toMatch(
-      /isIndexablePath\(\s*Astro\.url\.pathname\s*\)\s*\?\s*'index,follow'/,
+    // Two legitimate shapes: inline call, or a const pre-computed from the call.
+    // The pre-computed form (!noindex && isIndexablePath(…)) is strictly better
+    // because it also honours the noindex prop; either satisfies this contract.
+    const inlineCall = /isIndexablePath\(\s*Astro\.url\.pathname\s*\)\s*\?\s*'index,follow'/.test(
+      base,
+    );
+    const viaConst =
+      /const\s+indexable\s*=.*isIndexablePath\(\s*Astro\.url\.pathname\s*\)/.test(base) &&
+      /indexable\s*\?\s*'index,follow'/.test(base);
+    expect(inlineCall || viaConst, 'Base.astro does not derive robots from isIndexablePath').toBe(
+      true,
     );
   });
 

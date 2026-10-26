@@ -1,8 +1,15 @@
 ---
-import { applyPlatformGate } from '../config';
-import body from '../html/terms.html?raw';
-import Base from '../layouts/Base.astro';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+const headings = [
+  { slug: 'your-account', text: 'Your account' },
+  { slug: 'your-code-and-findings', text: 'Your code and findings' },
+  { slug: 'acceptable-use', text: 'Acceptable use' },
+  { slug: 'plans-and-payment', text: 'Plans and payment' },
+  { slug: 'ending-the-service', text: 'Ending the service' },
+  { slug: 'liability', text: 'Liability' },
+  { slug: 'contact', text: 'Contact' },
+];
 ---
-<Base title="Terms of Service — OAuthLint" description="OAuthLint is built by identity & security engineers at Auspeo. Why curation beats coverage, and the project changelog.">
-  <Fragment set:html={applyPlatformGate(body)} />
-</Base>
+<ArticleLayout title="Terms of Service" headings={headings} notice="Cloud is not yet available. The Cloud-specific sections below describe the planned service; the open-source CLI is governed by its MIT license.">
+<h1>Terms of Service</h1><p>Last updated <time datetime="2026-09-01">2026-09-01</time> · Applies to OAuthLint Cloud</p><p>These terms cover OAuthLint Cloud, the hosted service run by Auspeo SAS. The open-source CLI and the self-hosted app are covered by their own licenses, MIT and AGPL-3.0, not by these terms.</p><h2 id="your-account">Your account</h2><p>You are responsible for the people you invite and for keeping sign-in credentials safe. One organisation per company; accounts are for people, not shared logins.</p><h2 id="your-code-and-findings">Your code and findings</h2><p>You keep all rights to your code and to the findings it produces. We process findings only to run the service for you. We do not use your code or findings to train models.</p><h2 id="acceptable-use">Acceptable use</h2><ul><li>Scan only repositories you are allowed to scan.</li><li>Do not use the service to find and exploit vulnerabilities in systems you do not own.</li><li>Do not try to access another organisation's data.</li></ul><h2 id="plans-and-payment">Plans and payment</h2><p>Free covers up to 10 contributors. Team is billed monthly per active contributor, prorated when the count changes. Enterprise terms are set in your order form.</p><h2 id="ending-the-service">Ending the service</h2><p>You can export your data and close your organisation at any time from Settings. We keep your data for 30 days after closing, then delete it.</p><h2 id="liability">Liability</h2><p>The service helps find security issues; it cannot guarantee it finds all of them. Our liability is limited to the fees you paid in the 12 months before a claim.</p><h2 id="contact">Contact</h2><p>Questions about these terms: <a href="mailto:legal@auspeo.dev">legal@auspeo.dev</a>.</p>
+</ArticleLayout>

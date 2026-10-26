@@ -1,8 +1,54 @@
 ---
-import { applyPlatformGate } from '../config';
-import body from '../html/disclosure.html?raw';
-import Base from '../layouts/Base.astro';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+const headings = [
+  { slug: 'scope', text: 'Scope' },
+  { slug: 'report', text: 'How to report' },
+  { slug: 'timeline', text: 'What happens next' },
+  { slug: 'safe-harbor', text: 'Safe harbour' },
+  { slug: 'out-of-scope', text: 'Out of scope' },
+  { slug: 'recognition', text: 'Recognition' },
+];
 ---
-<Base title="Disclosure policy — OAuthLint" description="A static-analysis linter for the OAuth, OIDC, JWT, session and CORS anti-patterns AI coding tools generate. Hand-curated rules, zero false positives on clean auth libraries. Open source, MIT.">
-  <Fragment set:html={applyPlatformGate(body)} />
-</Base>
+<ArticleLayout title="Disclosure policy" headings={headings}>
+<div>
+      <nav aria-label="Breadcrumb"><ol><li><a href="/security">Security</a></li><li aria-hidden="true">/</li><li><span aria-current="page">Disclosure policy</span></li></ol></nav>
+      <h1>Disclosure policy</h1>
+      <p>Last updated <time datetime="2026-09-01">2026-09-01</time></p>
+      <p>We want to hear about any vulnerability in OAuthLint, whether it is in the CLI, the rules, the app or the service we run. If you report in good faith and follow this policy, we will work with you, fix it quickly, and not pursue legal action.</p>
+
+      <div>
+        <div><p>Report a vulnerability</p><p>Email <a href="mailto:security@auspeo.dev">security@auspeo.dev</a>. Do not open a public issue.</p></div>
+        <a href="mailto:security@auspeo.dev">Email the security team</a>
+      </div>
+
+      <h2 id="scope">Scope</h2>
+      <p>Everything we publish or operate:</p>
+      <ul><li><span aria-hidden="true"></span><span>The OAuthLint CLI and the rule pack</span></li><li><span aria-hidden="true"></span><span>The editor extensions and the CI integration</span></li><li><span aria-hidden="true"></span><span>The app, self-hosted or on our Cloud</span></li><li><span aria-hidden="true"></span><span>The source-control integrations for GitHub, GitLab, Bitbucket and Azure DevOps</span></li><li><span aria-hidden="true"></span><span>oauthlint.dev and its subdomains</span></li></ul>
+      <p>A rule that misses a real bug, or flags correct code, is a detection issue rather than a vulnerability. Report it as a false negative or false positive on the rule's page.</p>
+
+      <h2 id="report">How to report</h2>
+      <p>Send one email per issue. The more of this you can include, the faster we can confirm it:</p>
+      <ul><li><span aria-hidden="true"></span><span>The component and version affected</span></li><li><span aria-hidden="true"></span><span>Steps to reproduce, or a proof of concept</span></li><li><span aria-hidden="true"></span><span>What an attacker could do with it</span></li><li><span aria-hidden="true"></span><span>Whether you have shared it with anyone else</span></li></ul>
+      <p>Please give us a reasonable time to fix the issue before you disclose it publicly. We will agree a date with you.</p>
+
+      <h2 id="timeline">What happens next</h2>
+      <p>We confirm we received your report, assess it, and keep you updated until it is fixed. Our targets:</p>
+      <div>
+        <table><caption>Response and fix targets by severity</caption>
+          <thead><tr><th scope="col">Severity</th><th scope="col">First response</th><th scope="col">Fix target</th></tr></thead>
+          <tbody><tr><th scope="row">Critical</th><td>1 business day</td><td>7 days</td></tr><tr><th scope="row">High</th><td>1 business day</td><td>30 days</td></tr><tr><th scope="row">Medium</th><td>3 business days</td><td>90 days</td></tr><tr><th scope="row">Low</th><td>5 business days</td><td>Next release</td></tr></tbody>
+        </table>
+      </div>
+      <p>Fixes to the Cloud ship as soon as they are ready. Self-hosted fixes ship as a release with a security advisory, so you know when to update.</p>
+
+      <h2 id="safe-harbor">Safe harbour</h2>
+      <p>We will not pursue or support legal action against you for research that follows this policy. That means you:</p>
+      <ul><li><span aria-hidden="true"></span><span>Test only against your own account, or a self-hosted instance you run</span></li><li><span aria-hidden="true"></span><span>Stop and report as soon as you reach data that is not yours</span></li><li><span aria-hidden="true"></span><span>Do not degrade the service for other users</span></li><li><span aria-hidden="true"></span><span>Keep the details private until the issue is fixed</span></li></ul>
+
+      <h2 id="out-of-scope">Out of scope</h2>
+      <ul><li><span aria-hidden="true"></span><span>Denial of service and volumetric attacks</span></li><li><span aria-hidden="true"></span><span>Social engineering and physical attacks</span></li><li><span aria-hidden="true"></span><span>Reports from automated scanners with no demonstrated impact</span></li><li><span aria-hidden="true"></span><span>Missing security headers with no exploitable consequence</span></li><li><span aria-hidden="true"></span><span>Vulnerabilities in a third-party service we do not control</span></li></ul>
+
+      <h2 id="recognition">Recognition</h2>
+      <p>With your permission, we credit you in the security advisory and on this page. We do not run a paid bounty programme today.</p>
+    </div>
+</ArticleLayout>
